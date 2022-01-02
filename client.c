@@ -7,6 +7,45 @@
 #include <string.h>
 #include <unistd.h>
 
+
+void registerClie(int sockfd) {
+    char buffer[10];
+    int n;
+    printf("Please enter username: ");
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+
+    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
+    if (n < 0) {
+        perror("Error writing to socket");
+    }
+
+    printf("Please enter password: ");
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+
+    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
+    if (n < 0) {
+        perror("Error writing to socket");
+    }
+
+    bzero(buffer, 256); //vynulujem buffer
+    n = read(sockfd, buffer, 255); //precitam spravu zo servera
+    if (n < 0) {
+        perror("Error reading from socket");
+    }
+
+    printf("%s\n", buffer); //vypisem spravu od serveru
+}
+
+void welcomeCli() {
+    printf("Welcome to chat app\n");
+    printf("Select your option: \n");
+    printf("1. Create account\n");
+    printf("2.Log in\n");
+    printf("0. exit\n");
+}
+
 int client(int argc, char *argv[])
 {
     int sockfd, n;
@@ -52,34 +91,7 @@ int client(int argc, char *argv[])
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-    printf("Please enter username: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-
-    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
-    if (n < 0) {
-        perror("Error writing to socket");
-        return 5;
-    }
-
-    printf("Please enter password: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-
-    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
-    if (n < 0) {
-        perror("Error writing to socket");
-        return 5;
-    }
-
-    bzero(buffer, 256); //vynulujem buffer
-    n = read(sockfd, buffer, 255); //precitam spravu zo servera
-    if (n < 0) {
-        perror("Error reading from socket");
-        return 6;
-    }
-
-    printf("%s\n", buffer); //vypisem spravu od serveru
+    registerClie(sockfd);
 
     for(;;) {
 

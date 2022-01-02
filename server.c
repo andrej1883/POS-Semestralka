@@ -12,8 +12,6 @@ typedef struct{
     int  newMsg;
 } message;
 
-
-
 typedef struct {
     char username[10];
     char passwd[10];
@@ -23,10 +21,15 @@ typedef struct {
 user *users[10];
 int numberUsers = 0;
 
+void welcomeServ(int newsockfd) {
+
+}
+
 void registerUser(int newsockfd) {
     user *new = (user *) malloc(sizeof (user));
     char buffer[10];
     int n;
+
     bzero(buffer,10); //vynulujem buffer
     n = read(newsockfd, buffer, 10);
     strcpy(new->username,buffer);
