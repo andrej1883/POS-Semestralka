@@ -5,6 +5,43 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+
+typedef struct {
+    char username[10];
+    char passwd[10];
+} user;
+
+user *users[10];
+int numberUsers = 0;
+
+void registerUser(int newsockfd) {
+    user *new = (user *) malloc(sizeof (user));
+    char buffer[10];
+    int n;
+    bzero(buffer,10); //vynulujem buffer
+    n = read(newsockfd, buffer, 10);
+    strcpy(new->username,buffer);
+
+    for (int i = 0; i < 10; ++i) {
+        if(!users[i]) {
+            users[i] = new;
+            numberUsers++;
+            break;
+        }
+    }
+    printf("New user: %s\n",new->username);
+    printf("Current users: \n");
+    for (int i = 0; i < numberUsers; ++i) {
+        printf("%s\n",users[i]->username);
+    }
+    const char* msg = "User sucesfully registered";
+    n = write(newsockfd, msg, strlen(msg)+1);
+    if (n < 0)
+    {
+        perror("Error writing to socket");
+    }
+}
 
 int server(int argc, char *argv[])
 {
@@ -51,23 +88,29 @@ int server(int argc, char *argv[])
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
 
+    registerUser(newsockfd);
 
 
-    bzero(buffer,256); //vynulujem buffer
-    n = read(newsockfd, buffer, 255); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
-    if (n < 0)
-    {
-        perror("Error reading from socket");
-        return 4;
-    }
-    printf("Here is the message: %s\n", buffer);
 
-    const char* msg = "I got your message";
-    n = write(newsockfd, msg, strlen(msg)+1);
-    if (n < 0)
-    {
-        perror("Error writing to socket");
-        return 5;
+    for (;;) {
+        signal(SIGPIPE, SIG_IGN);
+
+        bzero(buffer,256); //vynulujem buffer
+        n = read(newsockfd, buffer, 255); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
+        if (n < 0)
+        {
+            perror("Error reading from socket");
+            return 4;
+        }
+        printf("Here is the message: %s\n", buffer);
+
+        const char* msg = "I got your message";
+        n = write(newsockfd, msg, strlen(msg)+1);
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+            return 5;
+        }
     }
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------

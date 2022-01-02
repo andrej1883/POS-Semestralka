@@ -52,27 +52,45 @@ int client(int argc, char *argv[])
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-    printf("Please enter a message: ");
-    bzero(buffer,256); //vynulujem buffer
+    printf("Please enter username: ");
+    bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
 
     n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
-    if (n < 0)
-    {
+    if (n < 0) {
         perror("Error writing to socket");
         return 5;
     }
-
-    bzero(buffer,256); //vynulujem buffer
+    bzero(buffer, 256); //vynulujem buffer
     n = read(sockfd, buffer, 255); //precitam spravu zo servera
-    if (n < 0)
-    {
+    if (n < 0) {
         perror("Error reading from socket");
         return 6;
     }
 
-    printf("%s\n",buffer); //vypisem spravu od serveru
+    printf("%s\n", buffer); //vypisem spravu od serveru
 
+    for(;;) {
+
+        printf("Please enter a message: ");
+        bzero(buffer, 256); //vynulujem buffer
+        fgets(buffer, 255, stdin); //naplnim buffer
+
+        n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
+        if (n < 0) {
+            perror("Error writing to socket");
+            return 5;
+        }
+
+        bzero(buffer, 256); //vynulujem buffer
+        n = read(sockfd, buffer, 255); //precitam spravu zo servera
+        if (n < 0) {
+            perror("Error reading from socket");
+            return 6;
+        }
+
+        printf("%s\n", buffer); //vypisem spravu od serveru
+    }
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
 
