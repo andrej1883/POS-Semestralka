@@ -2,10 +2,10 @@
 <project version="4">
   <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
-      <paths name="Pos (a3f80b61-6a2d-4a57-97a8-af753e8d9bef)">
+      <paths name="POS-Frios (7cca9be6-dbba-49af-9e4b-6ae2ca8ad0f9)">
         <serverdata>
           <mappings>
-            <mapping deploy="/tmp/tmp.bqzwJ0T7m4" local="$PROJECT_DIR$" />
+            <mapping deploy="/tmp/tmp.9a1DgJDoZ4" local="$PROJECT_DIR$" />
           </mappings>
           <excludedPaths>
             <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />

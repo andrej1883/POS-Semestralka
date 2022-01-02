@@ -8,6 +8,7 @@
 #include <signal.h>
 
 typedef struct{
+    struct user* fromUser;
     char text[10000];
     int  newMsg;
 } message;
@@ -15,6 +16,7 @@ typedef struct{
 typedef struct {
     char username[10];
     char passwd[10];
+    int numMsg;
     message *messages[10];
 } user;
 
@@ -22,6 +24,22 @@ user *users[10];
 int numberUsers = 0;
 
 void welcomeServ(int newsockfd) {
+
+}
+
+void addMessage(struct user* toUser, char* text, struct user* fromUser)
+{
+    message *newMessage = (message *) malloc(sizeof (message));
+    newMessage->newMsg = 1;
+    strcpy(newMessage->text,text);
+    newMessage->fromUser = fromUser;
+    for (int i = 0; i < numberUsers; ++i) {
+        if (users[i] == toUser) {
+            users[i]->messages[users[i]->numMsg] = newMessage;
+            users[i]->numMsg++;
+            return;
+        }
+    }
 
 }
 
@@ -117,6 +135,7 @@ int server(int argc, char *argv[])
             perror("Error reading from socket");
             return 4;
         }
+        addMessage(users[0], buffer, users[0]);
         printf("Here is the message: %s\n", buffer);
 
         const char* msg = "I got your message";
