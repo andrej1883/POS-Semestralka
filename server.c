@@ -23,11 +23,56 @@ typedef struct {
 user *users[10];
 int numberUsers = 0;
 
+void trimNL(char* arr, int length) {
+    for (int i = 0; i < length; ++i) {
+        if (arr[i] == '\n') {
+            arr[i] = '\0';
+            break;
+        }
+    }
+}
+
 void welcomeServ(int newsockfd) {
 
 }
+void updateAccountsLoad() {
+    FILE *filePointer ;
+    char line[50];
+    filePointer = fopen("users.txt", "r") ;
 
-void addMessage(struct user* toUser, char* text, struct user* fromUser)
+    while( fgets ( line, 50, filePointer ) != NULL )
+    {
+        char name[10], psswd[10];
+        sscanf(line, "%s %s", name, psswd);
+        trimNL(name,sizeof(name));
+        trimNL(psswd,sizeof(psswd));
+        if(numberUsers < 10) {
+            user *new = (user *) malloc(sizeof (user));
+            strcpy(new->username, name);
+            strcpy(new->passwd,psswd);
+            users[numberUsers] = new;
+        }
+        numberUsers++;
+    }
+
+    fclose(filePointer);
+}
+
+void updateAccountsSave() {
+    FILE *filePointer;
+    filePointer = fopen("users.txt", "w");
+
+    for (int i = 0; i < numberUsers; ++i) {
+        fputs(users[i]->username,filePointer);
+        fputs(" ", filePointer);
+        fputs(users[i]->passwd,filePointer);
+        fputs("\n", filePointer);
+    }
+
+    fclose(filePointer);
+}
+
+/*void addMessage(struct user* toUser, char* text, struct user* fromUser)
 {
     message *newMessage = (message *) malloc(sizeof (message));
     newMessage->newMsg = 1;
@@ -41,7 +86,7 @@ void addMessage(struct user* toUser, char* text, struct user* fromUser)
         }
     }
 
-}
+}*/
 
 void registerUser(int newsockfd) {
     user *new = (user *) malloc(sizeof (user));
@@ -50,16 +95,19 @@ void registerUser(int newsockfd) {
 
     bzero(buffer,10); //vynulujem buffer
     n = read(newsockfd, buffer, 10);
-    strcpy(new->username,buffer);
+    trimNL(buffer,sizeof (buffer));
+    strcpy(new->username, buffer);
 
     bzero(buffer,10); //vynulujem buffer
     n = read(newsockfd, buffer, 10);
+    trimNL(buffer,sizeof (buffer));
     strcpy(new->passwd,buffer);
 
     for (int i = 0; i < 10; ++i) {
         if(!users[i]) {
             users[i] = new;
             numberUsers++;
+            updateAccountsSave();
             break;
         }
     }
@@ -121,6 +169,8 @@ int server(int argc, char *argv[])
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
 
+    updateAccountsLoad();
+
     registerUser(newsockfd);
 
 
@@ -135,7 +185,7 @@ int server(int argc, char *argv[])
             perror("Error reading from socket");
             return 4;
         }
-        addMessage(users[0], buffer, users[0]);
+        //addMessage(users[0], buffer, users[0]);
         printf("Here is the message: %s\n", buffer);
 
         const char* msg = "I got your message";
