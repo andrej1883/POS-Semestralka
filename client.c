@@ -9,7 +9,7 @@
 
 
 void registerClie(int sockfd) {
-    char buffer[10];
+    char buffer[256];
     int n;
     printf("Please enter username: ");
     bzero(buffer, 256); //vynulujem buffer
