@@ -7,9 +7,17 @@
 #include <unistd.h>
 #include <signal.h>
 
+typedef struct{
+    char text[10000];
+    int  newMsg;
+} message;
+
+
+
 typedef struct {
     char username[10];
     char passwd[10];
+    message *messages[10];
 } user;
 
 user *users[10];
@@ -22,6 +30,10 @@ void registerUser(int newsockfd) {
     bzero(buffer,10); //vynulujem buffer
     n = read(newsockfd, buffer, 10);
     strcpy(new->username,buffer);
+
+    bzero(buffer,10); //vynulujem buffer
+    n = read(newsockfd, buffer, 10);
+    strcpy(new->passwd,buffer);
 
     for (int i = 0; i < 10; ++i) {
         if(!users[i]) {

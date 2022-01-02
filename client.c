@@ -61,6 +61,17 @@ int client(int argc, char *argv[])
         perror("Error writing to socket");
         return 5;
     }
+
+    printf("Please enter password: ");
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+
+    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
+    if (n < 0) {
+        perror("Error writing to socket");
+        return 5;
+    }
+
     bzero(buffer, 256); //vynulujem buffer
     n = read(sockfd, buffer, 255); //precitam spravu zo servera
     if (n < 0) {
