@@ -3,6 +3,6 @@ project(chat C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(chat main.c client.c server.c errors.c errors.h)
+add_executable(chat main.c client.c server.c errors.c errors.h clientHandler.c clientHandler.h serverHandler.c serverHandler.h)
 target_link_libraries(chat pthread)
 

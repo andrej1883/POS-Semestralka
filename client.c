@@ -7,6 +7,9 @@
 #include <unistd.h>
 #include <signal.h>
 #include "errors.h"
+#include "clientHandler.h"
+
+ char* myName;
 
 void authClie(int sockfd) {
     char buffer[256];
@@ -28,6 +31,8 @@ void authClie(int sockfd) {
     bzero(buffer, 256); //vynulujem buffer
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
+
+    loggedMenuCli(sockfd,myName);
 }
 
 void registerClie(int sockfd) {
@@ -50,55 +55,6 @@ void registerClie(int sockfd) {
     bzero(buffer, 256); //vynulujem buffer
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
-}
-
-void welcomeCli(int sockfd) {
-    char buffer[256];
-    int exitFlag = 0;
-    int option;
-
-    while(exitFlag == 0) {
-        bzero(buffer, 256); //vynulujem buffer
-        chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-        printf("%s\n", buffer); //vypisem spravu od serveru
-
-
-        printf("Select your option: \n");
-        printf("1. Create account\n");
-        printf("2. Log in\n");
-        printf("3. exit\n");
-
-        printf("Your option: ");
-        bzero(buffer, 256); //vynulujem buffer
-        fgets(buffer, 255, stdin); //naplnim buffer
-        chScWErr(write(sockfd, buffer, strlen(buffer)));
-        option  = atoi(buffer);
-
-        switch (option) {
-            case 1:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
-                exitFlag = 1;
-                registerClie(sockfd);
-                break;
-            case 2:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
-                exitFlag = 1;
-                authClie(sockfd);
-                break;
-            case 3:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
-                exit(0);
-            default:
-                exitFlag = 0;
-                printf("here we go again\n");
-        }
-    }
 }
 
 int client(int argc, char *argv[])

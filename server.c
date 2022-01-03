@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include "errors.h"
+#include "serverHandler.h"
 
 typedef struct{
     //struct user* fromUser;
@@ -19,6 +20,7 @@ typedef struct {
     char passwd[10];
     int numMsg;
     message *messages[10];
+    int online;
 } user;
 
 user *users[10];
@@ -52,12 +54,13 @@ void authServ(int newsockfd) {
 
     for (int i = 0; i < numberUsers; ++i) {
         if((strcmp(users[i]->username,name) == 0) && (strcmp(users[i]->passwd,psswd) == 0)) {
+            users[i]->online = 1;
             userFound = 1;
             break;
         }
     }
     if(userFound == 0) {
-        const char* msg = "User not found!";
+        const char* msg = "Login or password incorrect!";
         chScWErr(write(newsockfd, msg, strlen(msg)+1));
     }
 
@@ -194,43 +197,16 @@ void registerUser(int newsockfd) {
     chScWErr(write(newsockfd, msg, strlen(msg)+1));
 }
 
-void welcomeServ(int newsockfd) {
-    char buffer[10];
-    int option;
-    int exitFlag = 0;
-    char* msg;
-
-    while (exitFlag == 0) {
-        msg = "Welcome to chat app";
-        chScWErr(write(newsockfd, msg, strlen(msg)+1));
-
-        bzero(buffer,10); //vynulujem buffer
-        chScRErr(read(newsockfd, buffer, 10));
-        option = atoi(buffer);
-        switch (option) {
-            case 1:
-                msg = "Option 1\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
-                exitFlag = 1;
-                registerUser(newsockfd);
-                break;
-            case 2:
-                msg = "Option 2\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
-                exitFlag = 1;
-                authServ(newsockfd);
-                break;
-            case 3:
-                msg = "See you soon :)\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
-                exit(0);
-
-            default:
-                msg = "Choose correct option!\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+void deleteUser(char* name) {
+    for (int i = 0; i < numberUsers; ++i) {
+        if(strcmp(users[i]->username,name) == 0) {
+            free(users[i]);
+            users[i] = NULL;
+            updateAccountsSave();
         }
     }
 }
+
 
 int server(int argc, char *argv[])
 {
