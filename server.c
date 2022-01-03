@@ -82,24 +82,27 @@ void authServ(int newsockfd) {
 void updateAccountsLoad() {
     FILE *filePointer ;
     char line[50];
-    filePointer = fopen("users.txt", "r") ;
 
-    while( fgets ( line, 50, filePointer ) != NULL )
-    {
-        char name[10], psswd[10];
-        sscanf(line, "%s %s", name, psswd);
-        trimNL(name,sizeof(name));
-        trimNL(psswd,sizeof(psswd));
-        if(numberUsers < 10) {
-            user *new = (user *) malloc(sizeof (user));
-            strcpy(new->username, name);
-            strcpy(new->passwd,psswd);
-            users[numberUsers] = new;
+    if( access( "users.txt", F_OK ) == 0 ) {
+        filePointer = fopen("users.txt", "r") ;
+        while( fgets ( line, 50, filePointer ) != NULL )
+        {
+            char name[10], psswd[10];
+            sscanf(line, "%s %s", name, psswd);
+            trimNL(name,sizeof(name));
+            trimNL(psswd,sizeof(psswd));
+            if(numberUsers < 10) {
+                user *new = (user *) malloc(sizeof (user));
+                strcpy(new->username, name);
+                strcpy(new->passwd,psswd);
+                users[numberUsers] = new;
+            }
+            numberUsers++;
         }
-        numberUsers++;
+        fclose(filePointer);
+    } else {
+        printf("Users file not found!\n");
     }
-
-    fclose(filePointer);
 }
 
 void updateAccountsSave() {
@@ -211,36 +214,42 @@ void registerUser(int newsockfd) {
 void welcomeServ(int newsockfd) {
     char buffer[10];
     int option;
-    char* msg = "Welcome to chat app";
-    chScWErr(write(newsockfd, msg, strlen(msg)+1));
+    int exitFlag = 0;
 
-    bzero(buffer,10); //vynulujem buffer
-    chScRErr(read(newsockfd, buffer, 10));
-    trimNL(buffer,1);
-    option = atoi(buffer);
-    switch (option) {
-        case 1:
-            msg = "Option 1\n";
-            chScWErr(write(newsockfd, msg, strlen(msg)+1));
-            registerUser(newsockfd);
-            break;
-        case 2:
-            msg = "Option 2\n";
-            chScWErr(write(newsockfd, msg, strlen(msg)+1));
-            authServ(newsockfd);
-            break;
-        case 3:
-            msg = "Option 3\n";
-            chScWErr(write(newsockfd, msg, strlen(msg)+1));
+    while (exitFlag == 0) {
+        char* msg = "Welcome to chat app";
+        chScWErr(write(newsockfd, msg, strlen(msg)+1));
 
-            exit(0);
-            break;
+        bzero(buffer,10); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 10));
+        trimNL(buffer,1);
+        option = atoi(buffer);
+        switch (option) {
+            case 1:
+                msg = "Option 1\n";
+                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                exitFlag = 1;
+                registerUser(newsockfd);
+                break;
+            case 2:
+                msg = "Option 2\n";
+                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                exitFlag = 1;
+                authServ(newsockfd);
+                break;
+            case 3:
+                msg = "Option 3\n";
+                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                exitFlag = 1;
+                exit(0);
+                break;
 
-        default:
-            msg = "Choose one option!\n";
-            chScWErr(write(newsockfd, msg, strlen(msg)+1));
-            welcomeServ(newsockfd);
+            default:
+                msg = "Choose one option!\n";
+                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+        }
     }
+
 
 }
 
@@ -293,9 +302,9 @@ int server(int argc, char *argv[])
             perror("Error reading from socket");
             return 4;
         }
-        //addMessage(users[0], buffer, users[0]);
+        addMessage(users[0], buffer, users[0]);
         printf("Here is the message: %s\n", buffer);
-
+        getMessages(users[0]);
         const char* msg = "I got your message";
         n = write(newsockfd, msg, strlen(msg)+1);
         if (n < 0)
