@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include "errors.h"
 
 typedef struct{
     struct user* fromUser;
@@ -32,9 +33,7 @@ void trimNL(char* arr, int length) {
     }
 }
 
-void welcomeServ(int newsockfd) {
 
-}
 
 void authServ(int newsockfd) {
 
@@ -168,6 +167,42 @@ void registerUser(int newsockfd) {
     }
 }
 
+void welcomeServ(int newsockfd) {
+    char buffer[10];
+    int option;
+    char* msg = "Welcome to chat app";
+    chScWErr(write(newsockfd, msg, strlen(msg)+1));
+
+    bzero(buffer,10); //vynulujem buffer
+    chScRErr(read(newsockfd, buffer, 10));
+    trimNL(buffer,1);
+    option = atoi(buffer);
+    switch (option) {
+        case 1:
+            msg = "Option 1\n";
+            chScWErr(write(newsockfd, msg, strlen(msg)+1));
+            registerUser(newsockfd);
+            break;
+        case 2:
+            msg = "Option 2\n";
+            chScWErr(write(newsockfd, msg, strlen(msg)+1));
+            authServ(newsockfd);
+            break;
+        case 3:
+            msg = "Option 3\n";
+            chScWErr(write(newsockfd, msg, strlen(msg)+1));
+
+            exit(0);
+            break;
+
+        default:
+            msg = "Choose one option!\n";
+            chScWErr(write(newsockfd, msg, strlen(msg)+1));
+            welcomeServ(newsockfd);
+    }
+
+}
+
 int server(int argc, char *argv[])
 {
     int sockfd, newsockfd;
@@ -187,34 +222,22 @@ int server(int argc, char *argv[])
     serv_addr.sin_addr.s_addr = INADDR_ANY; // povolene ip adresy - teraz vsetky
     serv_addr.sin_port = htons(atoi(argv[1])); //nastavi port litle to big endian
 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0); // vytvori socket
-    if (sockfd < 0)
-    {
-        perror("Error creating socket");
-        return 1;
-    }
+    chScCRErr(sockfd = socket(AF_INET, SOCK_STREAM, 0)); // vytvori socket
+    chScBDErr(bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr))); // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
 
-    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
-    {
-        perror("Error binding socket address");
-        return 2;
-    }
 
     listen(sockfd, 5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
     cli_len = sizeof(cli_addr);
 
-    newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len); //blokujuce systemove volanie, ked sa niekto pripoji, vrati novy socket na komunikaciu s pripojenym klientom
-    if (newsockfd < 0)
-    {
-        perror("ERROR on accept");
-        return 3;
-    }
+    chScACErr(newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len)); //blokujuce systemove volanie, ked sa niekto pripoji, vrati novy socket na komunikaciu s pripojenym klientom
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
 
     updateAccountsLoad();
-    authServ(newsockfd);
+
+    welcomeServ(newsockfd);
+    //authServ(newsockfd);
     //registerUser(newsockfd);
 
 

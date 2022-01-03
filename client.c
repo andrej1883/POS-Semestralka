@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "errors.h"
 
 void authClie(int sockfd) {
     char buffer[256];
@@ -40,7 +41,7 @@ void authClie(int sockfd) {
 void registerClie(int sockfd) {
     char buffer[256];
     int n;
-    printf("Create account: ");
+    printf("Create account: \n");
     printf("Please enter username: ");
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
@@ -68,12 +69,38 @@ void registerClie(int sockfd) {
     printf("%s\n", buffer); //vypisem spravu od serveru
 }
 
-void welcomeCli() {
-    printf("Welcome to chat app\n");
+void welcomeCli(int sockfd) {
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+
     printf("Select your option: \n");
     printf("1. Create account\n");
     printf("2.Log in\n");
-    printf("0. exit\n");
+    printf("3. exit\n");
+
+    printf("Your option: ");
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer)));
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+    if(strcmp(buffer,"Option 1\n") == 0) {
+        registerClie(sockfd);
+    } else if(strcmp(buffer,"Option 2\n") == 0) {
+        authClie(sockfd);
+    } else if(strcmp(buffer,"Option 3\n") == 0) {
+        printf("See you soon :)\n");
+        exit(0);
+    } else {
+        welcomeCli(sockfd);
+    }
+
 }
 
 int client(int argc, char *argv[])
@@ -121,8 +148,9 @@ int client(int argc, char *argv[])
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
 
-    authClie(sockfd);
+    //authClie(sockfd);
     //registerClie(sockfd);
+    welcomeCli(sockfd);
 
     for(;;) {
 
