@@ -9,7 +9,7 @@
 #include "errors.h"
 #include "clientHandler.h"
 
- char* myName[10];
+ char myName[10];
 
 void authClie(int sockfd) {
     char buffer[256];
@@ -21,10 +21,8 @@ void authClie(int sockfd) {
     fgets(buffer, 255, stdin); //naplnim buffer
     chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
     for (int i = 0; i < 10; ++i) {
-        myName[i] = &buffer[i];
+        myName[i] = buffer[i];
     }
-
-    printf("My name is: %s\n", buffer);
 
     printf("Please enter password: ");
     bzero(buffer, 256); //vynulujem buffer
@@ -36,7 +34,12 @@ void authClie(int sockfd) {
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    loggedMenuCli(sockfd,*myName);
+    if(strcmp(buffer,"Login or password incorrect!") == 0) {
+        welcomeCli(sockfd);
+    } else {
+        loggedMenuCli(sockfd,myName);
+    }
+
 }
 
 void getMessagesClie(int sockfd) {
@@ -56,7 +59,9 @@ void registerClie(int sockfd) {
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
     chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
-
+    for (int i = 0; i < 10; ++i) {
+        myName[i] = buffer[i];
+    }
 
     printf("Please enter password: ");
     bzero(buffer, 256); //vynulujem buffer
@@ -67,6 +72,10 @@ void registerClie(int sockfd) {
     bzero(buffer, 256); //vynulujem buffer
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
+
+    if(strcmp(buffer,"User sucesfully registered") == 0) {
+        loggedMenuCli(sockfd,myName);
+    }
 }
 
 int client(int argc, char *argv[])

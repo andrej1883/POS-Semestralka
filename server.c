@@ -72,7 +72,7 @@ void authServ(int newsockfd) {
     if(userFound == 0) {
         const char* msg = "Login or password incorrect!";
         chScWErr(write(newsockfd, msg, strlen(msg)+1));
-
+        welcomeServ(newsockfd);
     }
 
     if (userFound == 1) {
@@ -237,16 +237,22 @@ void registerUser(int newsockfd) {
     }
     const char* msg = "User sucesfully registered";
     chScWErr(write(newsockfd, msg, strlen(msg)+1));
+    loggedMenuServ(newsockfd);
 }
 
 void deleteUser(char* name) {
     for (int i = 0; i < numberUsers; ++i) {
         if(strcmp(users[i]->username,name) == 0) {
+            printf("User %s deleted\n",users[i]->username);
             users[i] = NULL;
+            for (int j = i; j < numberUsers - 1; ++j) {
+                users[j] = users[j+1];
+            }
             numberUsers--;
             updateAccountsSave();
         }
     }
+
 }
 
 

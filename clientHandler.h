@@ -6,6 +6,6 @@
 #define CHAT_CLIENTHANDLER_H
 
 void welcomeCli(int sockfd);
-void loggedMenuCli(int sockfd, char* name);
+void loggedMenuCli(int sockfd, char name[10]);
 
 #endif //CHAT_CLIENTHANDLER_H

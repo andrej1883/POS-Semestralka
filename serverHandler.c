@@ -50,6 +50,11 @@ void loggedMenuServ(int newsockfd) {
     int exitFlag = 0;
     int option;
     char* msg;
+    char username[10];
+
+    bzero(username,10); //vynulujem buffer
+    chScRErr(read(newsockfd, username, 10));
+    trimNL(username,sizeof (username));
 
     while (exitFlag == 0) {
         bzero(buffer,10); //vynulujem buffer
@@ -58,39 +63,28 @@ void loggedMenuServ(int newsockfd) {
         option = atoi(buffer);
         switch (option) {
             case 1:
-                msg = "Option 1\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
-                bzero(buffer,10);
-                chScRErr(read(newsockfd, buffer, 10));
-                trimNL(buffer,sizeof (buffer));
-                deleteUser(buffer);
+                deleteUser(username);
+                welcomeServ(newsockfd);
                 exitFlag = 1;
                 break;
             case 2:
-                msg = "Option 2\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
                 exitFlag = 1;
                 welcomeServ(newsockfd);
                 break;
             case 3:
-                msg = "Not implemented yet\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                exitFlag = 0;
                 break;
             case 4:
-                msg = "Not implemented yet\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                exitFlag = 0;
                 break;
             case 5:
-                msg = "Not implemented yet\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                exitFlag = 0;
                 break;
             case 6:
-                msg = "Not implemented yet\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                exitFlag = 0;
                 break;
             case 7:
-                msg = "Not implemented yet\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                exitFlag = 0;
                 break;
             case 8:
                 msg = "See you soon :)\n";
@@ -98,6 +92,7 @@ void loggedMenuServ(int newsockfd) {
                 exit(0);
 
             default:
+                exitFlag = 0;
                 msg = "Choose correct option!\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
         }

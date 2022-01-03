@@ -56,10 +56,15 @@ void welcomeCli(int sockfd) {
 
 }
 
-void loggedMenuCli(int sockfd, char* name) {
+void loggedMenuCli(int sockfd, char name[10]) {
     char buffer[256];
     int exitFlag = 0;
     int option;
+
+    bzero(buffer, 256); //vynulujem buffer
+    strcpy(buffer,name);
+    chScWErr(write(sockfd, buffer, strlen(buffer)));
+
 
     while(exitFlag == 0) {
         printf("What you want to do?\n");
@@ -81,44 +86,27 @@ void loggedMenuCli(int sockfd, char* name) {
 
         switch (option) {
             case 1:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
-                bzero(buffer, 256);
-                chScWErr(write(sockfd,name, sizeof(name)));
                 exitFlag = 1;
+                welcomeCli(sockfd);
                 break;
             case 2:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
                 exitFlag = 1;
                 welcomeCli(sockfd);
                 break;
             case 3:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
+                printf("Not implemented yet\n");
                 break;
             case 4:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
+                printf("Not implemented yet\n");
                 break;
             case 5:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
+                printf("Not implemented yet\n");
                 break;
             case 6:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
+                printf("Not implemented yet\n");
                 break;
             case 7:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
+                printf("Not implemented yet\n");
                 break;
             case 8:
                 bzero(buffer, 256); //vynulujem buffer
