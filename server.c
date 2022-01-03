@@ -1,4 +1,3 @@
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -39,16 +38,15 @@ void authServ(int newsockfd) {
     char buffer[10];
     char name[10];
     char psswd[10];
-    int n;
     int userFound = 0;
 
     bzero(buffer,10); //vynulujem buffer
-    n = read(newsockfd, buffer, 10);
+    chScRErr(read(newsockfd, buffer, 10));
     trimNL(buffer,sizeof (buffer));
     strcpy(name,buffer);
 
     bzero(buffer,10); //vynulujem buffer
-    n = read(newsockfd, buffer, 10);
+    chScRErr(read(newsockfd, buffer, 10));
     trimNL(buffer,sizeof (buffer));
     strcpy(psswd,buffer);
 
@@ -60,20 +58,12 @@ void authServ(int newsockfd) {
     }
     if(userFound == 0) {
         const char* msg = "User not found!";
-        n = write(newsockfd, msg, strlen(msg)+1);
-        if (n < 0)
-        {
-            perror("Error writing to socket");
-        }
+        chScWErr(write(newsockfd, msg, strlen(msg)+1));
     }
 
     if (userFound == 1) {
         const char* msg = "User sucesfully logged in";
-        n = write(newsockfd, msg, strlen(msg)+1);
-        if (n < 0)
-        {
-            perror("Error writing to socket");
-        }
+        chScWErr(write(newsockfd, msg, strlen(msg)+1));
     }
 }
 
@@ -117,7 +107,7 @@ void updateAccountsSave() {
     fclose(filePointer);
 }
 
-void addMessage( user* toUser, char* text, user* fromUser)
+/*void addMessage( user* toUser, char* text, user* fromUser)
 {
     message *newMessage = (message *) malloc(sizeof (message));
     newMessage->newMsg = 1;
@@ -171,20 +161,19 @@ void getMessagesFrom(user* msgOfUser, user* msgFromUser) {
         printf("Here is the message: %s\n", buffer);
     }
 
-}
+}*/
 
 void registerUser(int newsockfd) {
     user *new = (user *) malloc(sizeof (user));
     char buffer[10];
-    int n;
 
     bzero(buffer,10); //vynulujem buffer
-    n = read(newsockfd, buffer, 10);
+    chScRErr(read(newsockfd, buffer, 10));
     trimNL(buffer,sizeof (buffer));
     strcpy(new->username, buffer);
 
     bzero(buffer,10); //vynulujem buffer
-    n = read(newsockfd, buffer, 10);
+    chScRErr(read(newsockfd, buffer, 10));
     trimNL(buffer,sizeof (buffer));
     strcpy(new->passwd,buffer);
 
@@ -202,11 +191,7 @@ void registerUser(int newsockfd) {
         printf("%s\n",users[i]->username);
     }
     const char* msg = "User sucesfully registered";
-    n = write(newsockfd, msg, strlen(msg)+1);
-    if (n < 0)
-    {
-        perror("Error writing to socket");
-    }
+    chScWErr(write(newsockfd, msg, strlen(msg)+1));
 }
 
 void welcomeServ(int newsockfd) {
@@ -238,7 +223,6 @@ void welcomeServ(int newsockfd) {
             case 3:
                 msg = "See you soon :)\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
-                exitFlag = 1;
                 exit(0);
 
             default:
@@ -253,7 +237,6 @@ int server(int argc, char *argv[])
     int sockfd, newsockfd;
     socklen_t cli_len;
     struct sockaddr_in serv_addr, cli_addr;
-    int n;
     char buffer[256];
 
     if (argc < 2)
@@ -289,22 +272,16 @@ int server(int argc, char *argv[])
 
     for (;;) {
         bzero(buffer,256); //vynulujem buffer
-        n = read(newsockfd, buffer, 255); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
-        if (n < 0)
-        {
-            perror("Error reading from socket");
-            return 4;
-        }
+        chScRErr(read(newsockfd, buffer, 255)); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
+
         //addMessage(users[0], buffer, users[0]);
         printf("Here is the message: %s\n", buffer);
         //getMessages(users[0]);
-        const char* msg = "I got your message";
-        n = write(newsockfd, msg, strlen(msg)+1);
-        if (n < 0)
-        {
-            perror("Error writing to socket");
-            return 5;
+        if(strcmp(buffer,"exit") == 0) {
+            break;
         }
+        const char* msg = "I got your message";
+        chScWErr(write(newsockfd, msg, strlen(msg)+1));
     }
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------

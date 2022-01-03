@@ -1,4 +1,3 @@
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -11,63 +10,45 @@
 
 void authClie(int sockfd) {
     char buffer[256];
-    int n;
+
     printf("Log into server: \n");
     printf("Please enter username: ");
+
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
 
-    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
-    if (n < 0) {
-        perror("Error writing to socket");
-    }
 
     printf("Please enter password: ");
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
 
-    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
-    if (n < 0) {
-        perror("Error writing to socket");
-    }
 
     bzero(buffer, 256); //vynulujem buffer
-    n = read(sockfd, buffer, 255); //precitam spravu zo servera
-    if (n < 0) {
-        perror("Error reading from socket");
-    }
-
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 }
 
 void registerClie(int sockfd) {
     char buffer[256];
-    int n;
+
     printf("Create account: \n");
     printf("Please enter username: ");
+
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
 
-    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
-    if (n < 0) {
-        perror("Error writing to socket");
-    }
 
     printf("Please enter password: ");
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
 
-    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
-    if (n < 0) {
-        perror("Error writing to socket");
-    }
 
     bzero(buffer, 256); //vynulujem buffer
-    n = read(sockfd, buffer, 255); //precitam spravu zo servera
-    if (n < 0) {
-        perror("Error reading from socket");
-    }
-
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 }
 
@@ -112,7 +93,6 @@ void welcomeCli(int sockfd) {
                 bzero(buffer, 256); //vynulujem buffer
                 chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
                 printf("%s\n", buffer); //vypisem spravu od serveru
-                exitFlag = 1;
                 exit(0);
             default:
                 exitFlag = 0;
@@ -123,7 +103,7 @@ void welcomeCli(int sockfd) {
 
 int client(int argc, char *argv[])
 {
-    int sockfd, n;
+    int sockfd;
     struct sockaddr_in serv_addr;
     struct hostent* server; //uchovava informacie o serveri
 
@@ -151,18 +131,10 @@ int client(int argc, char *argv[])
     );
     serv_addr.sin_port = htons(atoi(argv[2])); //little/big endian
 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0); //vytvorim tcp internetovy socket
-    if (sockfd < 0)
-    {
-        perror("Error creating socket");
-        return 3;
-    }
+    chScCRErr(sockfd = socket(AF_INET, SOCK_STREAM, 0)); //vytvorim tcp internetovy socket
 
-    if(connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) // cez vytvoreny socket sa pripojim (blokujuce volanie, caka kym sa pripojim na server)
-    {
-        perror("Error connecting to socket");
-        return 4;
-    }
+    chScCNErr(connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr))); // cez vytvoreny socket sa pripojim (blokujuce volanie, caka kym sa pripojim na server)
+
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
     signal(SIGPIPE, SIG_IGN);
@@ -174,27 +146,17 @@ int client(int argc, char *argv[])
         printf("Please enter a message: ");
         bzero(buffer, 256); //vynulujem buffer
         fgets(buffer, 255, stdin); //naplnim buffer
-
-        n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
-        if (n < 0) {
-            perror("Error writing to socket");
-            return 5;
+        if(strcmp(buffer,"exit") == 0) {
+            break;
         }
+        chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
 
         bzero(buffer, 256); //vynulujem buffer
-        n = read(sockfd, buffer, 255); //precitam spravu zo servera
-        if (n < 0) {
-            perror("Error reading from socket");
-            return 6;
-        }
+        chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
 
         printf("%s\n", buffer); //vypisem spravu od serveru
     }
-
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-
-
-
 
     close(sockfd); //uzavriem socket
 

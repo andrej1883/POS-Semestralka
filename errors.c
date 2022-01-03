@@ -34,3 +34,9 @@ void chScCRErr(int n) {
         perror("Error creating socket");
     }
 }
+void chScCNErr(int n) {
+    if (n < 0)
+    {
+        perror("Error connecting to socket");
+    }
+}

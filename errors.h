@@ -9,5 +9,6 @@ void chScWErr(int n);
 void chScCRErr(int n);
 void chScBDErr(int n);
 void chScACErr(int n);
+void chScCNErr(int n);
 
 #endif //CHAT_ERRORS_H
