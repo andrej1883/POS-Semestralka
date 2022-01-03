@@ -47,6 +47,14 @@ void getMessagesClie(int sockfd) {
     printf("%s\n", buffer); //vypisem spravu od serveru
 }
 
+void getMessagesFromClie(int sockfd) {
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+}
+
 void registerClie(int sockfd) {
     char buffer[256];
 
@@ -121,6 +129,7 @@ int client(int argc, char *argv[])
         chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
 
         getMessagesClie(sockfd);
+        //getMessagesFromClie(sockfd);
         bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
 
