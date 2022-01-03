@@ -115,7 +115,7 @@ void updateAccountsSave() {
     fclose(filePointer);
 }
 
-/*void addMessage(struct user* toUser, char* text, struct user* fromUser)
+void addMessage(struct user* toUser, char* text, struct user* fromUser)
 {
     message *newMessage = (message *) malloc(sizeof (message));
     newMessage->newMsg = 1;
@@ -129,7 +129,7 @@ void updateAccountsSave() {
         }
     }
 
-}*/
+}
 
 void getMessages(struct user* msgOfUser) {
     int n;
