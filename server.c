@@ -9,7 +9,8 @@
 #include "errors.h"
 
 typedef struct{
-    struct user* fromUser;
+    //struct user* fromUser;
+    char fromUser[10];
     char text[10000];
     int  newMsg;
 } message;
@@ -115,14 +116,14 @@ void updateAccountsSave() {
     fclose(filePointer);
 }
 
-void addMessage(struct user* toUser, char* text, struct user* fromUser)
+void addMessage( user* toUser, char* text, user* fromUser)
 {
     message *newMessage = (message *) malloc(sizeof (message));
     newMessage->newMsg = 1;
     strcpy(newMessage->text,text);
-    newMessage->fromUser = fromUser;
+    strcpy(newMessage->fromUser, fromUser->username);
     for (int i = 0; i < numberUsers; ++i) {
-        if (users[i] == toUser) {
+        if (strcmp(users[i]->username, toUser->username)) {
             users[i]->messages[users[i]->numMsg] = newMessage;
             users[i]->numMsg++;
             return;
@@ -131,7 +132,7 @@ void addMessage(struct user* toUser, char* text, struct user* fromUser)
 
 }
 
-void getMessages(struct user* msgOfUser) {
+void getMessages(user* msgOfUser) {
     int n;
     char buffer[256];
     user *newUser = (user*) malloc(sizeof (user));
@@ -145,7 +146,7 @@ void getMessages(struct user* msgOfUser) {
 
 }
 
-void getMessagesFrom(struct user* msgOfUser, struct user* msgFromUser) {
+void getMessagesFrom(user* msgOfUser, user* msgFromUser) {
     char buffer[256];
     user *newUser = (user*) malloc(sizeof (user));
     newUser = msgOfUser;
@@ -154,7 +155,7 @@ void getMessagesFrom(struct user* msgOfUser, struct user* msgFromUser) {
     int numOfMsgFromUser = 0;
     message *usersMessages[newUser->numMsg];
     for (int i = 0; i < newUser->numMsg; ++i) {
-        if (newUser->messages[i]->fromUser == senderUser) {
+        if (strcmp(msgOfUser->messages[i]->fromUser, senderUser->username)) {
             usersMessages[numOfMsgFromUser]= newUser->messages[i];
             numOfMsgFromUser++;
         }
