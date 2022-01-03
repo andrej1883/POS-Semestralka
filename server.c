@@ -1,3 +1,4 @@
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -21,7 +22,12 @@ typedef struct {
     int numMsg;
     message *messages[10];
     int online;
+    //struct freindlist * freindlist;
 } user;
+
+//typedef struct {
+//    user* friends[100];
+//} friendlist;
 
 user *users[10];
 int numberUsers = 0;
@@ -110,14 +116,29 @@ void updateAccountsSave() {
     fclose(filePointer);
 }
 
-/*void addMessage( user* toUser, char* text, user* fromUser)
+void addMessage( char* toUserName, char* text, char* fromUserName)
 {
+    user * toUser = (user*) malloc(sizeof (user));
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, toUserName) == 0){
+            toUser = users[i];
+        }
+    }
+
+    user * fromUser = (user*) malloc(sizeof (user));
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, fromUserName) == 0){
+            fromUser = users[i];
+        }
+    }
+
     message *newMessage = (message *) malloc(sizeof (message));
     newMessage->newMsg = 1;
     strcpy(newMessage->text,text);
     strcpy(newMessage->fromUser, fromUser->username);
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, toUser->username) == 0) {
+        //if (users[i]->username == toUser->username) {
             users[i]->messages[users[i]->numMsg] = newMessage;
             users[i]->numMsg++;
             return;
@@ -126,30 +147,46 @@ void updateAccountsSave() {
 
 }
 
-void getMessages(user* msgOfUser) {
+void getMessages(int newsockfd, char* msgOfUser) {
     int n;
     char buffer[256];
     user *newUser = (user*) malloc(sizeof (user));
-    newUser = msgOfUser;
-    printf("Here are messages for you: \n");
-    for (int i = 0; i < newUser->numMsg; ++i) {
-        bzero(buffer,256);
-        strcpy(buffer, newUser->messages[i]->text);
-        printf("Here is the message: %s\n", buffer);
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, msgOfUser) == 0){
+            newUser = users[i];
+        }
     }
+    printf("Here are messages for you: \n");
+    bzero(buffer,256);
+    strcpy(buffer, "Here are messages for you: \n");
+    //chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    for (int i = 0; i < newUser->numMsg; ++i) {
+        strcat(buffer, newUser->messages[i]->text);
+    }
+    printf("%s\n", buffer);
+    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
 
 }
 
-void getMessagesFrom(user* msgOfUser, user* msgFromUser) {
+void getMessagesFrom(char* msgOfUser, char* msgFromUser) {
     char buffer[256];
     user *newUser = (user*) malloc(sizeof (user));
-    newUser = msgOfUser;
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, msgOfUser) == 0){
+            newUser = users[i];
+        }
+    }
     user *senderUser = (user*) malloc(sizeof (user));
-    senderUser = msgFromUser;
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, msgFromUser) == 0){
+            senderUser = users[i];
+        }
+    }
     int numOfMsgFromUser = 0;
     message *usersMessages[newUser->numMsg];
     for (int i = 0; i < newUser->numMsg; ++i) {
-        if (strcmp(msgOfUser->messages[i]->fromUser, senderUser->username)) {
+        if (strcmp(newUser->messages[i]->fromUser, senderUser->username) == 0) {
             usersMessages[numOfMsgFromUser]= newUser->messages[i];
             numOfMsgFromUser++;
         }
@@ -161,10 +198,10 @@ void getMessagesFrom(user* msgOfUser, user* msgFromUser) {
     for (int i = 0; i < numOfMsgFromUser; ++i) {
         bzero(buffer,256);
         strcpy(buffer, usersMessages[i]->text);
-        printf("Here is the message: %s\n", buffer);
+        printf("%s\n", buffer);
     }
 
-}*/
+}
 
 void registerUser(int newsockfd) {
     user *new = (user *) malloc(sizeof (user));
@@ -250,13 +287,14 @@ int server(int argc, char *argv[])
         bzero(buffer,256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 255)); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
 
-        //addMessage(users[0], buffer, users[0]);
+        addMessage("Jarko", buffer, "Jarko");
         printf("Here is the message: %s\n", buffer);
         //getMessages(users[0]);
         if(strcmp(buffer,"exit") == 0) {
             break;
         }
         const char* msg = "I got your message";
+        //getMessages(newsockfd, "Jarko");
         chScWErr(write(newsockfd, msg, strlen(msg)+1));
     }
 
