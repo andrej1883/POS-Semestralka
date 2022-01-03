@@ -7,10 +7,40 @@
 #include <string.h>
 #include <unistd.h>
 
+void authClie(int sockfd) {
+    char buffer[256];
+    int n;
+    printf("Log into server: \n");
+    printf("Please enter username: ");
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
 
+    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
+    if (n < 0) {
+        perror("Error writing to socket");
+    }
+
+    printf("Please enter password: ");
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+
+    n = write(sockfd, buffer, strlen(buffer)); //zapisem buffer na server
+    if (n < 0) {
+        perror("Error writing to socket");
+    }
+
+    bzero(buffer, 256); //vynulujem buffer
+    n = read(sockfd, buffer, 255); //precitam spravu zo servera
+    if (n < 0) {
+        perror("Error reading from socket");
+    }
+
+    printf("%s\n", buffer); //vypisem spravu od serveru
+}
 void registerClie(int sockfd) {
     char buffer[256];
     int n;
+    printf("Create account: ");
     printf("Please enter username: ");
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
@@ -89,9 +119,10 @@ int client(int argc, char *argv[])
         return 4;
     }
 
-
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-    registerClie(sockfd);
+
+    authClie(sockfd);
+    //registerClie(sockfd);
 
     for(;;) {
 

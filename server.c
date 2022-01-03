@@ -35,6 +35,50 @@ void trimNL(char* arr, int length) {
 void welcomeServ(int newsockfd) {
 
 }
+
+void authServ(int newsockfd) {
+
+    char buffer[10];
+    char name[10];
+    char psswd[10];
+    int n;
+    int userFound = 0;
+
+    bzero(buffer,10); //vynulujem buffer
+    n = read(newsockfd, buffer, 10);
+    trimNL(buffer,sizeof (buffer));
+    strcpy(name,buffer);
+
+    bzero(buffer,10); //vynulujem buffer
+    n = read(newsockfd, buffer, 10);
+    trimNL(buffer,sizeof (buffer));
+    strcpy(psswd,buffer);
+
+    for (int i = 0; i < numberUsers; ++i) {
+        if((strcmp(users[i]->username,name) == 0) && (strcmp(users[i]->passwd,psswd) == 0)) {
+            userFound = 1;
+            break;
+        }
+    }
+    if(userFound == 0) {
+        const char* msg = "User not found!";
+        n = write(newsockfd, msg, strlen(msg)+1);
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+        }
+    }
+
+    if (userFound == 1) {
+        const char* msg = "User sucesfully logged in";
+        n = write(newsockfd, msg, strlen(msg)+1);
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+        }
+    }
+}
+
 void updateAccountsLoad() {
     FILE *filePointer ;
     char line[50];
@@ -170,8 +214,8 @@ int server(int argc, char *argv[])
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
 
     updateAccountsLoad();
-
-    registerUser(newsockfd);
+    authServ(newsockfd);
+    //registerUser(newsockfd);
 
 
 
