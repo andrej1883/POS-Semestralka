@@ -9,7 +9,7 @@
 #include "errors.h"
 #include "clientHandler.h"
 
- char* myName;
+ char* myName[10];
 
 void authClie(int sockfd) {
     char buffer[256];
@@ -20,7 +20,11 @@ void authClie(int sockfd) {
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
     chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    for (int i = 0; i < 10; ++i) {
+        myName[i] = &buffer[i];
+    }
 
+    printf("My name is: %s\n", buffer);
 
     printf("Please enter password: ");
     bzero(buffer, 256); //vynulujem buffer
@@ -115,7 +119,7 @@ int client(int argc, char *argv[])
         }
         chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
 
-        //getMessagesClie(sockfd);
+        getMessagesClie(sockfd);
         bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
 

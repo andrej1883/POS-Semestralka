@@ -1,4 +1,3 @@
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -17,11 +16,16 @@ typedef struct{
 } message;
 
 typedef struct {
+    char* name[10];
+} friend;
+
+typedef struct {
     char username[10];
     char passwd[10];
     int numMsg;
     message *messages[10];
     int online;
+    friend *friends[50];
     //struct freindlist * freindlist;
 } user;
 
@@ -68,11 +72,13 @@ void authServ(int newsockfd) {
     if(userFound == 0) {
         const char* msg = "Login or password incorrect!";
         chScWErr(write(newsockfd, msg, strlen(msg)+1));
+
     }
 
     if (userFound == 1) {
         const char* msg = "User sucesfully logged in";
         chScWErr(write(newsockfd, msg, strlen(msg)+1));
+        loggedMenuServ(newsockfd);
     }
 }
 
@@ -148,7 +154,6 @@ void addMessage( char* toUserName, char* text, char* fromUserName)
 }
 
 void getMessages(int newsockfd, char* msgOfUser) {
-    int n;
     char buffer[256];
     user *newUser = (user*) malloc(sizeof (user));
     for (int i = 0; i < numberUsers; ++i) {
@@ -237,8 +242,8 @@ void registerUser(int newsockfd) {
 void deleteUser(char* name) {
     for (int i = 0; i < numberUsers; ++i) {
         if(strcmp(users[i]->username,name) == 0) {
-            free(users[i]);
             users[i] = NULL;
+            numberUsers--;
             updateAccountsSave();
         }
     }
@@ -276,7 +281,7 @@ int server(int argc, char *argv[])
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
     signal(SIGPIPE, SIG_IGN);
     updateAccountsLoad();
-
+    deleteUser("Pepa");
     welcomeServ(newsockfd);
     //authServ(newsockfd);
     //registerUser(newsockfd);
@@ -287,14 +292,14 @@ int server(int argc, char *argv[])
         bzero(buffer,256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 255)); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
 
-        addMessage("Jarko", buffer, "Jarko");
+        addMessage("Pepa", buffer, "Pepa");
         printf("Here is the message: %s\n", buffer);
-        //getMessages(users[0]);
+
         if(strcmp(buffer,"exit") == 0) {
             break;
         }
         const char* msg = "I got your message";
-        //getMessages(newsockfd, "Jarko");
+        getMessages(newsockfd, "Pepa");
         chScWErr(write(newsockfd, msg, strlen(msg)+1));
     }
 
