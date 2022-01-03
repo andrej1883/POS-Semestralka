@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include "errors.h"
 
 void authClie(int sockfd) {
@@ -73,6 +74,7 @@ void registerClie(int sockfd) {
 void welcomeCli(int sockfd) {
     char buffer[256];
     int exitFlag = 0;
+    int option;
 
     while(exitFlag == 0) {
         bzero(buffer, 256); //vynulujem buffer
@@ -89,27 +91,34 @@ void welcomeCli(int sockfd) {
         bzero(buffer, 256); //vynulujem buffer
         fgets(buffer, 255, stdin); //naplnim buffer
         chScWErr(write(sockfd, buffer, strlen(buffer)));
+        option  = atoi(buffer);
 
-        bzero(buffer, 256); //vynulujem buffer
-        chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-        printf("%s\n", buffer); //vypisem spravu od serveru
-
-        if(strcmp(buffer,"Option 1\n") == 0) {
-            exitFlag = 1;
-            registerClie(sockfd);
-        } else if(strcmp(buffer,"Option 2\n") == 0) {
-            exitFlag = 1;
-            authClie(sockfd);
-        } else if(strcmp(buffer,"Option 3\n") == 0) {
-            printf("See you soon :)\n");
-            exitFlag = 1;
-            exit(0);
-        } else {
-            welcomeCli(sockfd);
+        switch (option) {
+            case 1:
+                bzero(buffer, 256); //vynulujem buffer
+                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+                printf("%s\n", buffer); //vypisem spravu od serveru
+                exitFlag = 1;
+                registerClie(sockfd);
+                break;
+            case 2:
+                bzero(buffer, 256); //vynulujem buffer
+                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+                printf("%s\n", buffer); //vypisem spravu od serveru
+                exitFlag = 1;
+                authClie(sockfd);
+                break;
+            case 3:
+                bzero(buffer, 256); //vynulujem buffer
+                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+                printf("%s\n", buffer); //vypisem spravu od serveru
+                exitFlag = 1;
+                exit(0);
+            default:
+                exitFlag = 0;
+                printf("here we go again\n");
         }
     }
-
-
 }
 
 int client(int argc, char *argv[])
@@ -156,13 +165,12 @@ int client(int argc, char *argv[])
     }
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-
+    signal(SIGPIPE, SIG_IGN);
     //authClie(sockfd);
     //registerClie(sockfd);
     welcomeCli(sockfd);
 
     for(;;) {
-
         printf("Please enter a message: ");
         bzero(buffer, 256); //vynulujem buffer
         fgets(buffer, 255, stdin); //naplnim buffer

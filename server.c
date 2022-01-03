@@ -34,8 +34,6 @@ void trimNL(char* arr, int length) {
     }
 }
 
-
-
 void authServ(int newsockfd) {
 
     char buffer[10];
@@ -126,7 +124,7 @@ void addMessage( user* toUser, char* text, user* fromUser)
     strcpy(newMessage->text,text);
     strcpy(newMessage->fromUser, fromUser->username);
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, toUser->username)) {
+        if (strcmp(users[i]->username, toUser->username) == 0) {
             users[i]->messages[users[i]->numMsg] = newMessage;
             users[i]->numMsg++;
             return;
@@ -215,14 +213,14 @@ void welcomeServ(int newsockfd) {
     char buffer[10];
     int option;
     int exitFlag = 0;
+    char* msg;
 
     while (exitFlag == 0) {
-        char* msg = "Welcome to chat app";
+        msg = "Welcome to chat app";
         chScWErr(write(newsockfd, msg, strlen(msg)+1));
 
         bzero(buffer,10); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 10));
-        trimNL(buffer,1);
         option = atoi(buffer);
         switch (option) {
             case 1:
@@ -238,19 +236,16 @@ void welcomeServ(int newsockfd) {
                 authServ(newsockfd);
                 break;
             case 3:
-                msg = "Option 3\n";
+                msg = "See you soon :)\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
                 exitFlag = 1;
                 exit(0);
-                break;
 
             default:
-                msg = "Choose one option!\n";
+                msg = "Choose correct option!\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
         }
     }
-
-
 }
 
 int server(int argc, char *argv[])
@@ -283,7 +278,7 @@ int server(int argc, char *argv[])
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-
+    signal(SIGPIPE, SIG_IGN);
     updateAccountsLoad();
 
     welcomeServ(newsockfd);
@@ -293,8 +288,6 @@ int server(int argc, char *argv[])
 
 
     for (;;) {
-        signal(SIGPIPE, SIG_IGN);
-
         bzero(buffer,256); //vynulujem buffer
         n = read(newsockfd, buffer, 255); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
         if (n < 0)
@@ -302,9 +295,9 @@ int server(int argc, char *argv[])
             perror("Error reading from socket");
             return 4;
         }
-        addMessage(users[0], buffer, users[0]);
+        //addMessage(users[0], buffer, users[0]);
         printf("Here is the message: %s\n", buffer);
-        getMessages(users[0]);
+        //getMessages(users[0]);
         const char* msg = "I got your message";
         n = write(newsockfd, msg, strlen(msg)+1);
         if (n < 0)

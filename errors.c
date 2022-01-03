@@ -8,7 +8,7 @@
 void chScRErr(int n) {
     if (n < 0)
     {
-        perror("Error writing to socket");
+        perror("Error reading from socket");
     }
 }
 void chScWErr(int n) {
