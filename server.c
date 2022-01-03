@@ -1,3 +1,4 @@
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -15,8 +16,13 @@ typedef struct{
     int  newMsg;
 } message;
 
+typedef struct{
+    char fromUser[10];
+    char toUser[10];
+} fRequest;
+
 typedef struct {
-    char* name[10];
+    char fUsername[10];
 } friend;
 
 typedef struct {
@@ -25,8 +31,10 @@ typedef struct {
     int numMsg;
     message *messages[10];
     int online;
-    friend *friends[50];
-    //struct freindlist * freindlist;
+    int numFrd;
+    friend *friendlist[50];
+    int numReq;
+    fRequest *requests[10];
 } user;
 
 //typedef struct {
@@ -43,6 +51,32 @@ void trimNL(char* arr, int length) {
             break;
         }
     }
+}
+
+void sendRequest(char * fromUser, char* toUser) {
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, toUser) == 0) {
+            strcpy(users[i]->requests[users[i]->numReq]->toUser, toUser);
+            strcpy(users[i]->requests[users[i]->numReq]->fromUser, fromUser);
+            users[i]->numReq++;
+        }
+    }
+
+}
+
+void addFriend(char * usersName, char * friendsName) {
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, usersName) == 0) {
+            strcpy(users[i]->friendlist[users[i]->numFrd]->fUsername, friendsName) ;
+            users[i]->numFrd++;
+        }
+    }
+
+}
+
+void establishFriendship(char * friendOne, char * friendTwo) {
+    addFriend(friendOne, friendTwo);
+    addFriend(friendTwo, friendTwo);
 }
 
 void authServ(int newsockfd) {
@@ -174,7 +208,7 @@ void getMessages(int newsockfd, char* msgOfUser) {
 
 }
 
-void getMessagesFrom(char* msgOfUser, char* msgFromUser) {
+void getMessagesFrom(int newsockfd, char* msgOfUser, char* msgFromUser) {
     char buffer[256];
     user *newUser = (user*) malloc(sizeof (user));
     for (int i = 0; i < numberUsers; ++i) {
@@ -198,14 +232,17 @@ void getMessagesFrom(char* msgOfUser, char* msgFromUser) {
     }
 
     bzero(buffer,256);
-    strcpy(buffer, senderUser->username);
+    strcpy(buffer, "Here are messages for you from " );
+    strcat(buffer, senderUser->username);
+    strcat(buffer, ": \n");
     printf("Here are messages for you from %s: \n", buffer);
-    for (int i = 0; i < numOfMsgFromUser; ++i) {
-        bzero(buffer,256);
-        strcpy(buffer, usersMessages[i]->text);
-        printf("%s\n", buffer);
-    }
 
+    for (int i = 0; i < numOfMsgFromUser; ++i) {
+
+        strcat(buffer, usersMessages[i]->text);
+    }
+    printf("%s\n", buffer);
+    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
 }
 
 void registerUser(int newsockfd) {
@@ -298,14 +335,16 @@ int server(int argc, char *argv[])
         bzero(buffer,256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 255)); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
 
-        addMessage("Pepa", buffer, "Pepa");
+        addMessage("Jarko", buffer, "Jarko");
+        //addFriend("Jarko","Jarko");
         printf("Here is the message: %s\n", buffer);
-
+        //getMessages(users[0]);
         if(strcmp(buffer,"exit") == 0) {
             break;
         }
         const char* msg = "I got your message";
-        getMessages(newsockfd, "Pepa");
+        //getMessages(newsockfd, "Jarko");
+        //getMessagesFrom(newsockfd, "Jarko", "Jarko");
         chScWErr(write(newsockfd, msg, strlen(msg)+1));
     }
 
