@@ -38,6 +38,7 @@ void authClie(int sockfd) {
 
     printf("%s\n", buffer); //vypisem spravu od serveru
 }
+
 void registerClie(int sockfd) {
     char buffer[256];
     int n;
@@ -79,7 +80,7 @@ void welcomeCli(int sockfd) {
 
     printf("Select your option: \n");
     printf("1. Create account\n");
-    printf("2.Log in\n");
+    printf("2. Log in\n");
     printf("3. exit\n");
 
     printf("Your option: ");

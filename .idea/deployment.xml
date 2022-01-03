@@ -2,13 +2,19 @@
 <project version="4">
   <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
-      <paths name="Frios (d4771deb-8423-49d0-a033-7fdddba3d46e)">
+      <paths name="POS (74022565-2b92-4c7a-98c0-8fe48f35e5cf)">
         <serverdata>
           <mappings>
-            <mapping deploy="/tmp/tmp.RPpjmsJez9" local="$PROJECT_DIR$" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="POS-Frios (7cca9be6-dbba-49af-9e4b-6ae2ca8ad0f9)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/tmp.1UyQo34bcJ" local="$PROJECT_DIR$" />
           </mappings>
           <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />
             <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />
           </excludedPaths>
         </serverdata>

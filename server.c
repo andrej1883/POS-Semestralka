@@ -131,6 +131,46 @@ void updateAccountsSave() {
 
 }*/
 
+void getMessages(struct user* msgOfUser) {
+    int n;
+    char buffer[256];
+    user *newUser = (user*) malloc(sizeof (user));
+    newUser = msgOfUser;
+    printf("Here are messages for you: \n");
+    for (int i = 0; i < newUser->numMsg; ++i) {
+        bzero(buffer,256);
+        strcpy(buffer, newUser->messages[i]->text);
+        printf("Here is the message: %s\n", buffer);
+    }
+
+}
+
+void getMessagesFrom(struct user* msgOfUser, struct user* msgFromUser) {
+    char buffer[256];
+    user *newUser = (user*) malloc(sizeof (user));
+    newUser = msgOfUser;
+    user *senderUser = (user*) malloc(sizeof (user));
+    senderUser = msgFromUser;
+    int numOfMsgFromUser = 0;
+    message *usersMessages[newUser->numMsg];
+    for (int i = 0; i < newUser->numMsg; ++i) {
+        if (newUser->messages[i]->fromUser == senderUser) {
+            usersMessages[numOfMsgFromUser]= newUser->messages[i];
+            numOfMsgFromUser++;
+        }
+    }
+
+    bzero(buffer,256);
+    strcpy(buffer, senderUser->username);
+    printf("Here are messages for you from %s: \n", buffer);
+    for (int i = 0; i < numOfMsgFromUser; ++i) {
+        bzero(buffer,256);
+        strcpy(buffer, usersMessages[i]->text);
+        printf("Here is the message: %s\n", buffer);
+    }
+
+}
+
 void registerUser(int newsockfd) {
     user *new = (user *) malloc(sizeof (user));
     char buffer[10];
