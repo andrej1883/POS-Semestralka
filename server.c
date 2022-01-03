@@ -281,11 +281,11 @@ int server(int argc, char *argv[])
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
     signal(SIGPIPE, SIG_IGN);
     updateAccountsLoad();
-    deleteUser("Pepa");
+    //deleteUser("Pepa");
     welcomeServ(newsockfd);
     //authServ(newsockfd);
     //registerUser(newsockfd);
-
+    //loggedMenuServ(newsockfd);
 
 
     for (;;) {

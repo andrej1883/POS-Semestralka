@@ -11,16 +11,14 @@
 
 void welcomeServ(int newsockfd) {
     char buffer[10];
-    int option;
     int exitFlag = 0;
+    int option;
     char* msg;
 
     while (exitFlag == 0) {
-        msg = "Welcome to chat app";
-        chScWErr(write(newsockfd, msg, strlen(msg)+1));
-
         bzero(buffer,10); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 10));
+
         option = atoi(buffer);
         switch (option) {
             case 1:
@@ -49,16 +47,14 @@ void welcomeServ(int newsockfd) {
 
 void loggedMenuServ(int newsockfd) {
     char buffer[10];
-    int option;
     int exitFlag = 0;
+    int option;
     char* msg;
 
     while (exitFlag == 0) {
-        msg = "What you want to do?";
-        chScWErr(write(newsockfd, msg, strlen(msg)+1));
-
         bzero(buffer,10); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 10));
+
         option = atoi(buffer);
         switch (option) {
             case 1:

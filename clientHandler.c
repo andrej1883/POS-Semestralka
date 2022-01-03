@@ -13,22 +13,18 @@ void welcomeCli(int sockfd) {
     int option;
 
     while(exitFlag == 0) {
-        bzero(buffer, 256); //vynulujem buffer
-        chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-        printf("%s\n", buffer); //vypisem spravu od serveru
-
-
+        printf("Welcome to chat app \n");
         printf("Select your option: \n");
         printf("1. Create account\n");
         printf("2. Log in\n");
         printf("3. exit\n");
-
         printf("Your option: ");
+
         bzero(buffer, 256); //vynulujem buffer
         fgets(buffer, 255, stdin); //naplnim buffer
         chScWErr(write(sockfd, buffer, strlen(buffer)));
-        option  = atoi(buffer);
 
+        option  = atoi(buffer);
         switch (option) {
             case 1:
                 bzero(buffer, 256); //vynulujem buffer
@@ -50,10 +46,14 @@ void welcomeCli(int sockfd) {
                 printf("%s\n", buffer); //vypisem spravu od serveru
                 exit(0);
             default:
+                bzero(buffer, 256); //vynulujem buffer
+                chScRErr(read(sockfd, buffer, 255));
+                printf("%s\n", buffer); //vypisem spravu od serveru
                 exitFlag = 0;
-                printf("here we go again\n");
+                //printf("here we go again\n");
         }
     }
+
 }
 
 void loggedMenuCli(int sockfd, char* name) {
@@ -62,10 +62,7 @@ void loggedMenuCli(int sockfd, char* name) {
     int option;
 
     while(exitFlag == 0) {
-        bzero(buffer, 256); //vynulujem buffer
-        chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-        printf("%s\n", buffer); //vypisem spravu od serveru
-
+        printf("What you want to do?\n");
         printf("Select your option: \n");
         printf("1. Delete account\n");
         printf("2. Log out\n");
@@ -130,7 +127,7 @@ void loggedMenuCli(int sockfd, char* name) {
                 exit(0);
             default:
                 exitFlag = 0;
-                printf("here we go again\n");
+                //printf("here we go again\n");
         }
     }
 }

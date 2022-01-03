@@ -36,7 +36,7 @@ void authClie(int sockfd) {
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    loggedMenuCli(sockfd,myName);
+    loggedMenuCli(sockfd,*myName);
 }
 
 void getMessagesClie(int sockfd) {
@@ -109,6 +109,7 @@ int client(int argc, char *argv[])
     //authClie(sockfd);
     //registerClie(sockfd);
     welcomeCli(sockfd);
+    //loggedMenuCli(sockfd,"Lojzik");
 
     for(;;) {
         printf("Please enter a message: ");
