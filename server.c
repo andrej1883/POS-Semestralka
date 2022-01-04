@@ -465,7 +465,7 @@ void manageRequests(int newsockfd, char *username) {
                 }
             }
         } else {
-            if ((strcmp(choise, 'n') == 0) || (strcmp(choise, 'N') == 0)) {
+            if ((choise == 'N') || (choise== 'n')) {
                 managingUser->numReq--;
 
                 for (int i = 0; i < managingUser->numReq; ++i) {
@@ -485,12 +485,12 @@ void manageRequests(int newsockfd, char *username) {
 
 }
 
-void removeFriend(int newsockfd, char *username) {
+//void removeFriend(int newsockfd, char *username) {
     /*  userovi sa ukazu jeho priatelia
      * on si jedneho vyberie
      * toto priatelstvo sa zrusi
      * */
-    char buffer[256];
+    /*char buffer[256];
     user *managingUser = (user*) malloc(sizeof (user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) == 0){
@@ -564,4 +564,4 @@ void removeFriend(int newsockfd, char *username) {
 
 
 
-}
+}*/

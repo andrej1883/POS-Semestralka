@@ -174,7 +174,7 @@ int client(int argc, char *argv[])
     return 0;
 }
 
-int manageRequestsClie(int sockfd) {
+void manageRequestsClie(int sockfd) {
     char buffer[256];
 
     bzero(buffer, 256); //vynulujem buffer
