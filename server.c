@@ -484,3 +484,84 @@ void manageRequests(int newsockfd, char *username) {
     }
 
 }
+
+void removeFriend(int newsockfd, char *username) {
+    /*  userovi sa ukazu jeho priatelia
+     * on si jedneho vyberie
+     * toto priatelstvo sa zrusi
+     * */
+    char buffer[256];
+    user *managingUser = (user*) malloc(sizeof (user));
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, username) == 0){
+            managingUser = users[i];
+        }
+    }
+
+    if (managingUser->numFrd !=0) {
+        bzero(buffer,256);
+        strcpy(buffer, "Choose friend to be removed: \n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+        for (int i = 0; i < managingUser->numFrd; ++i) {
+            int val = i +1;
+            //char num = val +'0';          Nefunkcna konverzia int na char, kvoli tomuto nie su poradove cisla
+            //strcat(buffer, num);
+            strcat(buffer, managingUser->friendlist[i]->fUsername);
+            strcat(buffer, "\n");
+        }
+
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+        bzero(buffer,256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+        int chosenFrd;
+        sscanf(buffer, "%d", &chosenFrd);
+
+        user *removedFriend = (user*) malloc(sizeof (user));
+        for (int i = 0; i < numberUsers; ++i) {
+            if (strcmp(users[i]->username, managingUser->friendlist[chosenFrd]->fUsername) == 0) {
+                removedFriend = users[i];
+            }
+        }
+
+        managingUser->numFrd--;
+        for (int i = 0; i < managingUser->numFrd; ++i) {
+            if (i>chosenFrd) {
+                friend *newFriend = (friend *) malloc(sizeof (friend));
+                strcpy(newFriend->fUsername, managingUser->friendlist[i+1]->fUsername);
+                managingUser->requests[i] = newFriend;
+            }
+        }
+
+        int selected;
+        for (int i = 0; i < removedFriend->numFrd; ++i) {
+            if (strcmp(removedFriend->friendlist[i]->fUsername, managingUser->username) == 0) {
+                selected = i;
+            }
+        }
+
+        removedFriend->numFrd--;
+
+        for (int i = 0; i < removedFriend->numFrd; ++i) {
+            if (i>selected) {
+                friend *newFriend = (friend *) malloc(sizeof (friend));
+                strcpy(newFriend->fUsername, removedFriend->friendlist[i+1]->fUsername);
+                removedFriend->requests[i] = newFriend;
+            }
+        }
+        bzero(buffer,256);
+        strcpy(buffer, "Friend removed!\n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    } else {
+        bzero(buffer,256);
+        strcpy(buffer, "You have no friends :( \n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    }
+
+
+
+}

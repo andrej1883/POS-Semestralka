@@ -20,5 +20,6 @@ void establishFriendship(char * friendOne, char * friendTwo);
 void addMessage( char* toUserName, char* text, char* fromUserName);
 void getMessages(int newsockfd, char* msgOfUser);
 void getMessagesFrom(int newsockfd, char* msgOfUser, char* msgFromUser);
+void removeFriend(int newsockfd, char* username);
 
 #endif //SOCKETY_SERVER_H
