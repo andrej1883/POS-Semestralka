@@ -7,5 +7,6 @@
 
 void welcomeCli(int sockfd);
 void loggedMenuCli(int sockfd, char name[10]);
+void msgMenuCli(int sockfd);
 
 #endif //CHAT_CLIENTHANDLER_H

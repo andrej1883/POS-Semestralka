@@ -251,7 +251,7 @@ void getMessages(int newsockfd, char* msgOfUser) {
     printf("%s\n", buffer);
     chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
 
-
+    msgMenuServ(newsockfd, msgOfUser);
 }
 
 void getMessagesFrom(int newsockfd, char* msgOfUser, char* msgFromUser) {
@@ -403,7 +403,7 @@ int server(int argc, char *argv[])
         bzero(buffer,256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 255)); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
 
-        addMessage("Jarko", buffer, "Jarko");
+        //addMessage("Jarko", buffer, "Jarko");
         //addFriend("Jarko","Jarko");
         printf("Here is the message: %s\n", buffer);
         //getMessages(users[0]);
@@ -504,15 +504,15 @@ void manageRequests(int newsockfd, char *username) {
         strcpy(buffer, "Wrong value\n");
         chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
     }
-
+    loggedMenuServ(newsockfd);
 }
 
-//void removeFriend(int newsockfd, char *username) {
+void removeFriend(int newsockfd, char *username) {
     /*  userovi sa ukazu jeho priatelia
      * on si jedneho vyberie
      * toto priatelstvo sa zrusi
      * */
-    /*char buffer[256];
+    char buffer[256];
     user *managingUser = (user*) malloc(sizeof (user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) == 0){
@@ -523,7 +523,6 @@ void manageRequests(int newsockfd, char *username) {
     if (managingUser->numFrd !=0) {
         bzero(buffer,256);
         strcpy(buffer, "Choose friend to be removed: \n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
 
         for (int i = 0; i < managingUser->numFrd; ++i) {
             int val = i +1;
@@ -553,7 +552,7 @@ void manageRequests(int newsockfd, char *username) {
             if (i>chosenFrd) {
                 friend *newFriend = (friend *) malloc(sizeof (friend));
                 strcpy(newFriend->fUsername, managingUser->friendlist[i+1]->fUsername);
-                managingUser->requests[i] = newFriend;
+                managingUser->friendlist[i] = newFriend;
             }
         }
 
@@ -570,7 +569,7 @@ void manageRequests(int newsockfd, char *username) {
             if (i>selected) {
                 friend *newFriend = (friend *) malloc(sizeof (friend));
                 strcpy(newFriend->fUsername, removedFriend->friendlist[i+1]->fUsername);
-                removedFriend->requests[i] = newFriend;
+                removedFriend->friendlist[i] = newFriend;
             }
         }
         bzero(buffer,256);
@@ -584,6 +583,67 @@ void manageRequests(int newsockfd, char *username) {
 
     }
 
+    loggedMenuServ(newsockfd);
 
+}
 
-}*/
+void sendMessage(int newsockfd, char *username) {
+    /* ponukne userovi jeho kontakty na vyber
+     * po vybere umozni napisat spravu
+     * ulozi spravu prislusnemu kontaktu
+     */
+    char buffer[256];
+    user *managingUser = (user*) malloc(sizeof (user));
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, username) == 0){
+            managingUser = users[i];
+        }
+    }
+
+    if (managingUser->numFrd !=0) {
+        bzero(buffer, 256);
+        strcpy(buffer, "Choose friend: \n");
+
+        for (int i = 0; i < managingUser->numFrd; ++i) {
+            int val = i + 1;
+            //char num = val +'0';          Nefunkcna konverzia int na char, kvoli tomuto nie su poradove cisla
+            //strcat(buffer, num);
+            strcat(buffer, managingUser->friendlist[i]->fUsername);
+            strcat(buffer, "\n");
+        }
+
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+        int chosenFrd;
+        sscanf(buffer, "%d", &chosenFrd);
+
+        user *textedFriend = (user*) malloc(sizeof (user));
+        for (int i = 0; i < numberUsers; ++i) {
+            if (strcmp(users[i]->username, managingUser->friendlist[chosenFrd]->fUsername) == 0) {
+                textedFriend = users[i];
+            }
+        }
+
+        bzero(buffer, 256);
+        strcpy(buffer, "Write message: \n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+        addMessage(textedFriend->username, buffer, managingUser->username);
+
+        bzero(buffer,256);
+        strcpy(buffer, "Message sent! \n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    }else {
+        bzero(buffer,256);
+        strcpy(buffer, "You have no friends :( \n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    }
+    loggedMenuServ(newsockfd);
+}

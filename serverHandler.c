@@ -45,6 +45,38 @@ void welcomeServ(int newsockfd) {
     }
 }
 
+void msgMenuServ(int newsockfd, char *username) {
+    char buffer[10];
+    int exitFlag = 0;
+    int option;
+    char* msg;
+
+    while (exitFlag == 0) {
+        bzero(buffer,10); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 10));
+
+        option = atoi(buffer);
+        switch (option) {
+            case 1:
+                exitFlag = 1;
+                sendMessage(newsockfd, username);
+                break;
+            case 2:
+                exitFlag = 1;
+                getMessages(newsockfd, username);
+                break;
+            case 3:
+                exitFlag = 1;
+                loggedMenuServ(newsockfd);
+                break;
+
+            default:
+                msg = "Choose correct option!\n";
+                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+        }
+    }
+}
+
 void loggedMenuServ(int newsockfd) {
     char buffer[10];
     int exitFlag = 0;
@@ -77,10 +109,11 @@ void loggedMenuServ(int newsockfd) {
                 break;
             case 4:
                 exitFlag = 1;
-                manageRequests(newsockfd, username);
+                removeFriend(newsockfd, username);
                 break;
             case 5:
-                exitFlag = 0;
+                exitFlag = 1;
+                msgMenuServ(newsockfd, username);
                 break;
             case 6:
                 exitFlag = 0;
@@ -89,6 +122,10 @@ void loggedMenuServ(int newsockfd) {
                 exitFlag = 0;
                 break;
             case 8:
+                exitFlag = 1;
+                manageRequests(newsockfd, username);
+                break;
+            case 9:
                 msg = "See you soon :)\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
                 exit(0);

@@ -6,4 +6,5 @@
 #define CHAT_SERVERHANDLER_H
 void welcomeServ(int newsockfd);
 void loggedMenuServ(int newsockfd);
+void msgMenuServ(int newsockfd, char *username);
 #endif //CHAT_SERVERHANDLER_H
