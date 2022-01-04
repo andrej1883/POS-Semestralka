@@ -112,6 +112,11 @@ void registerClie(int sockfd) {
 void sendFileClie(char* filename,int sockfd) {
     FILE *filePointer;
     char data[1024] = {0};
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    strcpy(buffer,myName);
+    chScWErr(write(sockfd, buffer, strlen(buffer)));
 
     if( access( filename, F_OK ) == 0 ) {
         filePointer = fopen(filename, "r") ;

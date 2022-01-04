@@ -1,4 +1,3 @@
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -44,6 +43,7 @@ typedef struct {
 
 user *users[10];
 int numberUsers = 0;
+int fileId = 0;
 
 void trimNL(char* arr, int length) {
     for (int i = 0; i < length; ++i) {
@@ -341,8 +341,13 @@ void deleteUser(char* name) {
 void rcvFileServ(int newsockfd) {
     int n;
     FILE *filepointer;
-    char *filename = "recv.txt";
+    char *filename = "files/rcv.txt";
     char buffer[1024];
+    char username[10];
+
+    bzero(username,10); //vynulujem buffer
+    chScRErr(read(newsockfd, username, 10));
+    trimNL(username,sizeof (username));
 
     filepointer = fopen(filename, "w");
     while (1) {
