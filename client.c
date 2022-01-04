@@ -109,6 +109,23 @@ void registerClie(int sockfd) {
     }
 }
 
+void sendFileClie(char* filename,int sockfd) {
+    FILE *filePointer;
+    char data[1024] = {0};
+
+    if( access( filename, F_OK ) == 0 ) {
+        filePointer = fopen(filename, "r") ;
+        while( fgets ( data, 1024, filePointer ) != NULL )
+        {
+            chSFErr(send(sockfd,data,sizeof (data),0));
+        }
+        bzero(data, 1024);
+        fclose(filePointer);
+    } else {
+        printf("File not found!\n");
+    }
+}
+
 int client(int argc, char *argv[])
 {
     int sockfd;
@@ -148,9 +165,9 @@ int client(int argc, char *argv[])
     signal(SIGPIPE, SIG_IGN);
     //authClie(sockfd);
     //registerClie(sockfd);
-    welcomeCli(sockfd);
+    //welcomeCli(sockfd);
     //loggedMenuCli(sockfd,"Lojzik");
-
+    sendFileClie("file.txt", sockfd);
     for(;;) {
         printf("Please enter a message: ");
         bzero(buffer, 256); //vynulujem buffer

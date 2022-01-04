@@ -47,3 +47,10 @@ void chScCNErr(int n) {
         exit(1);
     }
 }
+void chSFErr(int n) {
+    if (n < 0)
+    {
+        perror("Error sending file");
+        exit(1);
+    }
+}

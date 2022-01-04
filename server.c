@@ -179,8 +179,8 @@ void updateAccountsLoad() {
                 strcpy(new->username, name);
                 strcpy(new->passwd,psswd);
                 users[numberUsers] = new;
+                numberUsers++;
             }
-            numberUsers++;
         }
         fclose(filePointer);
     } else {
@@ -338,6 +338,22 @@ void deleteUser(char* name) {
 
 }
 
+void rcvFileServ(int newsockfd) {
+    int n;
+    FILE *filepointer;
+    char *filename = "recv.txt";
+    char buffer[1024];
+
+    filepointer = fopen(filename, "w");
+    while (1) {
+        n = recv(newsockfd, buffer, 1024, 0);
+        if (n <= 0){
+            break;
+        }
+        fprintf(filepointer, "%s", buffer);
+        bzero(buffer, 1024);
+    }
+}
 
 int server(int argc, char *argv[])
 {
@@ -371,10 +387,11 @@ int server(int argc, char *argv[])
     signal(SIGPIPE, SIG_IGN);
     updateAccountsLoad();
     //deleteUser("Pepa");
-    welcomeServ(newsockfd);
+   // welcomeServ(newsockfd);
     //authServ(newsockfd);
     //registerUser(newsockfd);
     //loggedMenuServ(newsockfd);
+    rcvFileServ(newsockfd);
 
 
     for (;;) {
@@ -449,10 +466,10 @@ void manageRequests(int newsockfd, char *username) {
 
         bzero(buffer,256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 256));
-        char choise = buffer[0];
+        char choice = buffer[0];
         //strcpy(choise, buffer);
         //if ((strcmp(choise, 'Y') == 0) || (strcmp(choise, 'y') == 0)) {
-        if ((choise == 'Y') || (choise== 'y')) {
+        if ((choice == 'Y') || (choice== 'y')) {
             establishFriendship(username, managingUser->requests[chosenReq]->fromUser);
             managingUser->numReq--;
 
@@ -465,7 +482,7 @@ void manageRequests(int newsockfd, char *username) {
                 }
             }
         } else {
-            if ((choise == 'N') || (choise== 'n')) {
+            if ((choice == 'N') || (choice== 'n')) {
                 managingUser->numReq--;
 
                 for (int i = 0; i < managingUser->numReq; ++i) {
