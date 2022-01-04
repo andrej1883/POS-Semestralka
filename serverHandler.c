@@ -72,10 +72,12 @@ void loggedMenuServ(int newsockfd) {
                 welcomeServ(newsockfd);
                 break;
             case 3:
-                exitFlag = 0;
+                exitFlag = 1;
+                addFriend(newsockfd, username);
                 break;
             case 4:
-                exitFlag = 0;
+                exitFlag = 1;
+                manageRequests(newsockfd, username);
                 break;
             case 5:
                 exitFlag = 0;

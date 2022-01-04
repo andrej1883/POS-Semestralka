@@ -94,10 +94,12 @@ void loggedMenuCli(int sockfd, char name[10]) {
                 welcomeCli(sockfd);
                 break;
             case 3:
-                printf("Not implemented yet\n");
+                exitFlag = 1;
+                addFriendClie(sockfd);
                 break;
             case 4:
-                printf("Not implemented yet\n");
+                exitFlag = 1;
+                manageRequestsClie(sockfd);
                 break;
             case 5:
                 printf("Not implemented yet\n");

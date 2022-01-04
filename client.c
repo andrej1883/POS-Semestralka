@@ -8,8 +8,10 @@
 #include <signal.h>
 #include "errors.h"
 #include "clientHandler.h"
+#include "client.h"
 
- char myName[10];
+
+char myName[10];
 
 void authClie(int sockfd) {
     char buffer[256];
@@ -40,6 +42,27 @@ void authClie(int sockfd) {
         loggedMenuCli(sockfd,myName);
     }
 
+}
+
+void addFriendClie(int sockfd) {
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    printf("Please enter number of user you wish to add: ");
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    if(strcmp(buffer,"Friend request sent!") == 0) {
+        loggedMenuCli(sockfd,myName);
+    }
 }
 
 void getMessagesClie(int sockfd) {
@@ -149,4 +172,27 @@ int client(int argc, char *argv[])
     close(sockfd); //uzavriem socket
 
     return 0;
+}
+
+int manageRequestsClie(int sockfd) {
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    printf("Please enter number of request: ");
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    loggedMenuCli(sockfd,myName);
 }
