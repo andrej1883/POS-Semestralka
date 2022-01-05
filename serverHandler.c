@@ -89,7 +89,8 @@ void loggedMenuServ(int newsockfd) {
                 fileMenuServ(newsockfd, username);
                 break;
             case 7:
-                exitFlag = 0;
+                exitFlag = 1;
+                groupMenuServ(newsockfd, username);
                 break;
             case 8:
                 exitFlag = 1;
@@ -161,6 +162,51 @@ void fileMenuServ(int newsockfd, char *username) {
                 getMessages(newsockfd, username);
                 break;
             case 3:
+                exitFlag = 1;
+                loggedMenuServ(newsockfd);
+                break;
+
+            default:
+                msg = "Choose correct option!\n";
+                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+        }
+    }
+}
+
+void groupMenuServ(int newsockfd, char *username) {
+    char buffer[10];
+    int exitFlag = 0;
+    int option;
+    char* msg;
+
+    while (exitFlag == 0) {
+        bzero(buffer,10); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 10));
+
+        option = atoi(buffer);
+        switch (option) {
+            case 1:
+                exitFlag = 1;
+                createGroup(newsockfd, username);
+                break;
+            case 2:
+                exitFlag = 1;
+                addMember(newsockfd, username);
+                break;
+            case 3:
+                exitFlag = 1;
+                removeMember(newsockfd, username);
+                break;
+            case 4:
+                exitFlag = 1;
+                sendGroupMessage(newsockfd, username);
+                break;
+            case 5:
+                exitFlag = 1;
+                getGroupMessages(newsockfd, username);
+                break;
+
+            case 6:
                 exitFlag = 1;
                 loggedMenuServ(newsockfd);
                 break;

@@ -76,7 +76,7 @@ void loggedMenuCli(int sockfd, char name[10]) {
         printf("4. Remove friend\n");
         printf("5. Messages\n");
         printf("6. Files\n");
-        printf("7. Start group chat\n");
+        printf("7. Group chats\n");
         printf("8. Friend requests\n");
         printf("9. exit\n");
 
@@ -112,7 +112,8 @@ void loggedMenuCli(int sockfd, char name[10]) {
                 fileMenuCli(sockfd);
                 break;
             case 7:
-                printf("Not implemented yet\n");
+                exitFlag = 1;
+                groupMenuCli(sockfd);
                 break;
             case 8:
                 exitFlag = 1;
@@ -207,6 +208,62 @@ void fileMenuCli(int sockfd) {
                 getMessagesClie(sockfd);
                 break;
             case 3:
+                exitFlag = 1;
+                backTologMenu(sockfd);
+
+                break;
+            default:
+                bzero(buffer, 256); //vynulujem buffer
+                chScRErr(read(sockfd, buffer, 255));
+                printf("%s\n", buffer); //vypisem spravu od serveru
+                exitFlag = 0;
+                //printf("here we go again\n");
+        }
+    }
+}
+
+void groupMenuCli(int sockfd) {
+    char buffer[256];
+    int exitFlag = 0;
+    int option;
+
+    while(exitFlag == 0) {
+        printf("Select your option: \n");
+        printf("1. Create new chat\n");
+        printf("2. Add member to chat\n");
+        printf("3. Leave chat\n");
+        printf("4. Send message to chat\n");
+        printf("5. Read chat messages\n");
+        printf("6. exit\n");
+        printf("Your option: ");
+
+        bzero(buffer, 256); //vynulujem buffer
+        fgets(buffer, 255, stdin); //naplnim buffer
+        chScWErr(write(sockfd, buffer, strlen(buffer)));
+
+        option  = atoi(buffer);
+        switch (option) {
+            case 1:
+                exitFlag = 1;
+                createGroupClie(sockfd);
+                break;
+            case 2:
+                exitFlag = 1;
+                addMemberClie(sockfd);
+                break;
+            case 3:
+                exitFlag = 1;
+                removeMemberClie(sockfd);
+                break;
+            case 4:
+                exitFlag = 1;
+                sendGroupMessageClie(sockfd);
+                break;
+            case 5:
+                exitFlag = 1;
+                getGroupMessagesClie(sockfd);
+                break;
+            case 6:
                 exitFlag = 1;
                 backTologMenu(sockfd);
 

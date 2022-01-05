@@ -16,4 +16,12 @@ void removeFriendClie(int sockfd);
 void backTologMenu(int sockfd);
 void sendMessageClie(int sockfd);
 void sendFileClie(char* filename,int sockfd, char* toUser);
+
+
+void addMemberClie(int sockfd);
+void createGroupClie(int sockfd);
+void removeMemberClie(int sockfd);
+void sendGroupMessageClie(int sockfd);
+void getGroupMessagesClie(int sockfd);
+
 #endif //SOCKETY_CLIENT_H

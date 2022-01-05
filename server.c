@@ -810,9 +810,17 @@ void readMessages(int newsockfd, char *username) {
 
 }
 
-void createGroup(char *nameofGroup, char *founderName) {
+void createGroup(int newsockfd, char *founderName) {
+    char buffer[256];
+    bzero(buffer,256);
+    strcpy(buffer, "Choose a name for new chat \n");
+    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    bzero(buffer,256); //vynulujem buffer
+    chScRErr(read(newsockfd, buffer, 256));
+
     groupChat *newGroup = (groupChat *) malloc(sizeof (groupChat));
-    strcpy(newGroup->chatName, nameofGroup);
+    strcpy(newGroup->chatName, buffer);
     friend *newMember = (friend *) malloc(sizeof (friend));
     strcpy(newMember->fUsername,founderName);
     newGroup->members[0] = newMember;
@@ -829,48 +837,120 @@ void createGroup(char *nameofGroup, char *founderName) {
     }
     founder->groupChats[founder->numGroups]=newGroup;
     founder->numGroups++;
+
+    bzero(buffer,256);
+    strcpy(buffer, "Chat created! \n");
+    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    loggedMenuServ(newsockfd);
+
 }
 
-void addMember(char *nameofGroup, char *membersName) {
-    groupChat *group = (groupChat *) malloc(sizeof (groupChat));
-    for (int i = 0; i < numberChats; ++i) {
-        if (strcmp(groupChats[i]->chatName, nameofGroup) == 0) {
-            group = groupChats[i];
+void addMember(int newsockfd, char *membersName) {
+
+    user * managingUser = (user*) malloc(sizeof (user));
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, membersName) == 0){
+            managingUser = users[i];
         }
     }
 
+    groupChat *group = (groupChat *) malloc(sizeof (groupChat));
+    char buffer[256];
+    bzero(buffer,256);
+    strcpy(buffer, "Here is list of all group chats: \n");
+    for (int i = 0; i < managingUser->numGroups; ++i) {
+        int val = i;
+        char sid[3];
+        sprintf(sid,"%i",val);
+        strcat(buffer, sid);
+        strcat(buffer, ". ");
+        strcat(buffer, managingUser->groupChats[i]->chatName);
+        strcat(buffer, "\n");
+    }
+    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
 
+    bzero(buffer,256); //vynulujem buffer
+    chScRErr(read(newsockfd, buffer, 256));
+
+    int test;
+    sscanf(buffer, "%d", &test);
+    if ((test >= 0) ) {
+        group = managingUser->groupChats[test];
+
+    }
+
+    bzero(buffer,256);
+    strcpy(buffer, "Here is list of all users: \n");
+    for (int i = 0; i < numberUsers; ++i) {
+        int val = i;
+        char sid[3];
+        sprintf(sid,"%i",val);
+        strcat(buffer, sid);
+        strcat(buffer, ". ");
+        strcat(buffer, users[i]->username);
+        strcat(buffer, "\n");
+    }
+    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    bzero(buffer,256); //vynulujem buffer
+    chScRErr(read(newsockfd, buffer, 256));
+
+    int test2;
+    sscanf(buffer, "%d", &test2);
     friend *newMember = (friend *) malloc(sizeof (friend));
-    strcpy(newMember->fUsername,membersName);
-    group->members[group->numMemb] = newMember;
-    group->numMemb++;
+    if ((test2 >= 0) ) {
+        strcpy(newMember->fUsername,users[test2]->username);
+        group->members[group->numMemb] = newMember;
+        group->numMemb++;
 
-    user * newMemberU = (user*) malloc(sizeof (user));
-    for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, membersName) == 0) {
-            newMemberU = users[i];
-        }
+        user * newMemberU = (user*) malloc(sizeof (user));
+        newMemberU = users[test2];
+
+        newMemberU->groupChats[newMemberU->numGroups] = group;
+        newMemberU->numGroups++;
     }
 
-    newMemberU->groupChats[newMemberU->numGroups] = group;
-    newMemberU->numGroups++;
+    bzero(buffer,256);
+    strcpy(buffer, "User added to chat! \n");
+    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    loggedMenuServ(newsockfd);
 
 }
 
-void removeMember(char *nameofGroup, char *membersName) {
+void removeMember(int newsockfd, char *membersName) {
 
-    groupChat *group = (groupChat *) malloc(sizeof (groupChat));
-    for (int i = 0; i < numberChats; ++i) {
-        if (strcmp(groupChats[i]->chatName, nameofGroup) == 0) {
-            group = groupChats[i];
+    user * managingUser = (user*) malloc(sizeof (user));
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, membersName) == 0){
+            managingUser = users[i];
         }
     }
 
-    user *removedMember = (user*) malloc(sizeof (user));
-    for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, membersName) == 0) {
-            removedMember = users[i];
-        }
+    groupChat *group = (groupChat *) malloc(sizeof (groupChat));
+    char buffer[256];
+    bzero(buffer,256);
+    strcpy(buffer, "Choose chat you want to leave: \n");
+    for (int i = 0; i < managingUser->numGroups; ++i) {
+        int val = i;
+        char sid[3];
+        sprintf(sid,"%i",val);
+        strcat(buffer, sid);
+        strcat(buffer, ". ");
+        strcat(buffer, managingUser->groupChats[i]->chatName);
+        strcat(buffer, "\n");
+    }
+    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    bzero(buffer,256); //vynulujem buffer
+    chScRErr(read(newsockfd, buffer, 256));
+
+    int test;
+    sscanf(buffer, "%d", &test);
+    if ((test >= 0) ) {
+        group = managingUser->groupChats[test];
+
     }
 
     int chosen;
@@ -888,18 +968,175 @@ void removeMember(char *nameofGroup, char *membersName) {
     }
 
     int chosengr;
-    for (int i = 0; i < removedMember->numGroups; ++i) {
-        if (strcmp(removedMember->groupChats[i]->chatName, nameofGroup) == 0) {
+    for (int i = 0; i < managingUser->numGroups; ++i) {
+        if (strcmp(managingUser->groupChats[i]->chatName, group->chatName) == 0) {
             chosengr == i;
         }
     }
-    removedMember->numGroups--;
+    managingUser->numGroups--;
 
     //groupChat *helperGroup = (groupChat *) malloc(sizeof (groupChat));
-    for (int i = 0; i < removedMember->numGroups; ++i) {
+    for (int i = 0; i < managingUser->numGroups; ++i) {
         if (i >= chosengr) {
-            removedMember->groupChats[i] = removedMember->groupChats[i+1];
+            managingUser->groupChats[i] = managingUser->groupChats[i+1];
+        }
+    }
+    loggedMenuServ(newsockfd);
+
+}
+
+void addGroupMessage(char *toGroupeName, char *text, char *fromUserName) {
+    groupChat * toGroup = (groupChat*) malloc(sizeof (groupChat));
+    for (int i = 0; i < numberChats; ++i) {
+        if (strcmp(groupChats[i]->chatName, toGroupeName) == 0){
+            toGroup = groupChats[i];
         }
     }
 
+    user * fromUser = (user*) malloc(sizeof (user));
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, fromUserName) == 0){
+            fromUser = users[i];
+        }
+    }
+
+    message *newMessage = (message *) malloc(sizeof (message));
+    newMessage->newMsg = 1;
+    strcpy(newMessage->text,text);
+    strcpy(newMessage->fromUser, fromUser->username);
+
+    toGroup->messages[toGroup->numMsg] = newMessage;
+    toGroup->numMsg++;
+
+
+}
+
+void sendGroupMessage(int newsockfd, char *userName) {
+    char buffer[256];
+    user *managingUser = (user*) malloc(sizeof (user));
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, userName) == 0){
+            managingUser = users[i];
+        }
+    }
+
+    if (managingUser->numGroups !=0) {
+        bzero(buffer, 256);
+        strcpy(buffer, "Choose Groupchat: \n");
+
+        for (int i = 0; i < managingUser->numGroups; ++i) {
+            int val = i;
+            char sid[3];
+            sprintf(sid,"%i",val);
+            strcat(buffer, sid);
+            strcat(buffer, ". ");
+            strcat(buffer, managingUser->groupChats[i]->chatName);
+            strcat(buffer, "\n");
+        }
+
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+        int chosenFrd;
+        sscanf(buffer, "%d", &chosenFrd);
+
+        groupChat *textedGroup = (groupChat*) malloc(sizeof (groupChat));
+        for (int i = 0; i < numberChats; ++i) {
+            if (strcmp(groupChats[i]->chatName, managingUser->groupChats[chosenFrd]->chatName) == 0) {
+                textedGroup = groupChats[i];
+            }
+        }
+        bzero(buffer, 256);
+        strcpy(buffer, "Write message: \n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+        addGroupMessage(textedGroup->chatName, buffer, managingUser->username);
+
+        bzero(buffer,256);
+        strcpy(buffer, "Message sent! \n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    }else {
+        bzero(buffer,256);
+        strcpy(buffer, "You aren't a member of any groupchats \n Press 0 to continue");
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+        bzero(buffer,256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+        bzero(buffer,256);
+        strcpy(buffer, "You can create a groupchat in following menu  \n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    }
+    loggedMenuServ(newsockfd);
+}
+
+void getGroupMessages(int newsockfd, char *username) {
+    char buffer[256];
+    user *managingUser = (user*) malloc(sizeof (user));
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, username) == 0){
+            managingUser = users[i];
+        }
+    }
+
+    if (managingUser->numGroups !=0) {
+        bzero(buffer, 256);
+        strcpy(buffer, "Choose Chat: \n");
+
+        for (int i = 0; i < managingUser->numGroups; ++i) {
+            int val = i;
+            char sid[3];
+            sprintf(sid,"%i",val);
+            strcat(buffer, sid);
+            strcat(buffer, ". ");
+            strcat(buffer, managingUser->groupChats[i]->chatName);
+            strcat(buffer, "\n");
+        }
+
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+        int chosenFrd;
+        sscanf(buffer, "%d", &chosenFrd);
+
+        groupChat *textedGroup = (groupChat*) malloc(sizeof (groupChat));
+        for (int i = 0; i < numberChats; ++i) {
+            if (strcmp(groupChats[i]->chatName, managingUser->groupChats[chosenFrd]->chatName) == 0) {
+                textedGroup = groupChats[i];
+            }
+        }
+
+        bzero(buffer, 256);
+        strcpy(buffer, "Here is the Chat log: \n");
+
+        for (int i = 0; i < textedGroup->numMsg; ++i) {
+            strcat(buffer, textedGroup->messages[i]->text);
+        }
+
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+
+
+    }else {
+        bzero(buffer,256);
+        strcpy(buffer, "You aren't a member of any groupchats \n Press 0 to continue");
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+        bzero(buffer,256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+        bzero(buffer,256);
+        strcpy(buffer, "You can create a groupchat in following menu  \n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+
+    }
+    loggedMenuServ(newsockfd);
 }

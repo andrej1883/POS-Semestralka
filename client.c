@@ -72,6 +72,14 @@ void getMessagesClie(int sockfd) {
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
     msgMenuCli( sockfd);
 }
 
@@ -307,5 +315,105 @@ void sendMessageClie(int sockfd) {
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
+    loggedMenuCli(sockfd,myName);
+}
+
+void addMemberClie(int sockfd) {
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    loggedMenuCli(sockfd,myName);
+}
+
+void removeMemberClie(int sockfd) {
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    loggedMenuCli(sockfd,myName);
+}
+
+void createGroupClie(int sockfd) {
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    loggedMenuCli(sockfd,myName);
+}
+
+void sendGroupMessageClie(int sockfd) {
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    loggedMenuCli(sockfd,myName);
+}
+
+void getGroupMessagesClie(int sockfd) {
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
     loggedMenuCli(sockfd,myName);
 }
