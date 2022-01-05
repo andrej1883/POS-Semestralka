@@ -24,4 +24,9 @@ void getMessagesFrom(int newsockfd, char* msgOfUser, char* msgFromUser);
 void removeFriend(int newsockfd, char* username);
 void sendMessage(int newsockfd, char* username);
 
+void readMessages(int newsockfd, char *username);
+void createGroup(char *nameofGroup, char *founderName);
+void addMember(char *nameofGroup, char *membersName);
+void removeMember(char *nameofGroup, char *membersName);
+
 #endif //SOCKETY_SERVER_H

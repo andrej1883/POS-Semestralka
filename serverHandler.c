@@ -126,7 +126,7 @@ void msgMenuServ(int newsockfd, char *username) {
                 break;
             case 2:
                 exitFlag = 1;
-                getMessages(newsockfd, username);
+                readMessages(newsockfd, username);
                 break;
             case 3:
                 exitFlag = 1;

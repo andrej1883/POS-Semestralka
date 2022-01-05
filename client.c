@@ -51,7 +51,7 @@ void addFriendClie(int sockfd) {
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    printf("Please enter number of user you wish to add: ");
+    //printf("Please enter number of user you wish to add: ");
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
     chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
@@ -240,7 +240,7 @@ void manageRequestsClie(int sockfd) {
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    printf("Please enter number of request: ");
+    //printf("Please enter number of request: ");
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
     chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
