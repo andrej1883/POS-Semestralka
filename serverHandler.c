@@ -140,37 +140,6 @@ void msgMenuServ(int newsockfd, char *username) {
     }
 }
 
-/*void getFileDialogServ(int newsockfd) {
-    char buffer[256];
-    user *managingUser = (user*) malloc(sizeof (user));
-    for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, username) == 0){
-            managingUser = users[i];
-        }
-    }
-
-    if (managingUser->numFrd !=0) {
-        bzero(buffer, 256);
-        strcpy(buffer, "Choose friend: \n");
-
-        for (int i = 0; i < managingUser->numFrd; ++i) {
-            int val = i + 1;
-            //char num = val +'0';          Nefunkcna konverzia int na char, kvoli tomuto nie su poradove cisla
-            //strcat(buffer, num);
-            strcat(buffer, managingUser->friendlist[i]->fUsername);
-            strcat(buffer, "\n");
-        }
-
-        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
-
-        bzero(buffer, 256); //vynulujem buffer
-        chScRErr(read(newsockfd, buffer, 256));
-
-        int chosenFrd;
-        sscanf(buffer, "%d", &chosenFrd);
-        }
-}*/
-
 void fileMenuServ(int newsockfd, char *username) {
     char buffer[10];
     int exitFlag = 0;

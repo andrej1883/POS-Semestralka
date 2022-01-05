@@ -171,33 +171,6 @@ void msgMenuCli(int sockfd) {
     }
 }
 
-void sendFileDialogCli(int sockfd) {
-    char buffer[256];
-
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-    printf("%s\n", buffer); //vypisem spravu od serveru
-
-    printf("Please enter number of user you wish to message: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
-
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-    printf("%s\n", buffer); //vypisem spravu od serveru
-
-    /*printf("Please enter text: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
-
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-    printf("%s\n", buffer); //vypisem spravu od serveru*/
-
-}
-
 void fileMenuCli(int sockfd) {
     char buffer[256];
     char buffer2[256];
