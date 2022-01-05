@@ -1,7 +1,7 @@
 #include "server.h"
 #include "client.h"
-#include "string.h"
 #include <stdio.h>
+#include <string.h>
 
 int main(int argc, char* argv[])
 {

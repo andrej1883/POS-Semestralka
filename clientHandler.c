@@ -6,6 +6,7 @@
 #include "errors.h"
 #include "clientHandler.h"
 #include "client.h"
+#include "server.h"
 
 void welcomeCli(int sockfd) {
     char buffer[256];
@@ -74,7 +75,7 @@ void loggedMenuCli(int sockfd, char name[10]) {
         printf("3. Add friend\n");
         printf("4. Remove friend\n");
         printf("5. Messages\n");
-        printf("6. Send file\n");
+        printf("6. Files\n");
         printf("7. Start group chat\n");
         printf("8. Friend requests\n");
         printf("9. exit\n");
@@ -107,7 +108,8 @@ void loggedMenuCli(int sockfd, char name[10]) {
                 msgMenuCli(sockfd);
                 break;
             case 6:
-                printf("Not implemented yet\n");
+                exitFlag = 1;
+                fileMenuCli(sockfd);
                 break;
             case 7:
                 printf("Not implemented yet\n");
@@ -149,6 +151,83 @@ void msgMenuCli(int sockfd) {
             case 1:
                 exitFlag = 1;
                 sendMessageClie(sockfd);
+                break;
+            case 2:
+                exitFlag = 1;
+                getMessagesClie(sockfd);
+                break;
+            case 3:
+                exitFlag = 1;
+                backTologMenu(sockfd);
+
+                break;
+            default:
+                bzero(buffer, 256); //vynulujem buffer
+                chScRErr(read(sockfd, buffer, 255));
+                printf("%s\n", buffer); //vypisem spravu od serveru
+                exitFlag = 0;
+                //printf("here we go again\n");
+        }
+    }
+}
+
+void sendFileDialogCli(int sockfd) {
+    char buffer[256];
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    printf("Please enter number of user you wish to message: ");
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    /*printf("Please enter text: ");
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru*/
+
+}
+
+void fileMenuCli(int sockfd) {
+    char buffer[256];
+    char buffer2[256];
+    int exitFlag = 0;
+    int option;
+
+    while(exitFlag == 0) {
+        printf("Select your option: \n");
+        printf("1. Send file\n");
+        printf("2. Download files\n");
+        printf("3. exit\n");
+        printf("Your option: ");
+
+        bzero(buffer, 256); //vynulujem buffer
+        fgets(buffer, 255, stdin); //naplnim buffer
+        chScWErr(write(sockfd, buffer, strlen(buffer)));
+
+        option  = atoi(buffer);
+        switch (option) {
+            case 1:
+                printf("Enter file name: ");
+                bzero(buffer, 256); //vynulujem buffer
+                fgets(buffer, 255, stdin); //naplnim buffer
+                trimNL(buffer,sizeof (buffer));
+                printf("Send to: ");
+                bzero(buffer2, 256); //vynulujem buffer
+                fgets(buffer2, 255, stdin); //naplnim buffer
+                trimNL(buffer2,sizeof (buffer2));
+                exitFlag = 1;
+                sendFileClie(buffer,sockfd,buffer2);
                 break;
             case 2:
                 exitFlag = 1;

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
+#include <sys/stat.h>
 #include "errors.h"
 #include "serverHandler.h"
 #include "server.h"
@@ -43,10 +43,6 @@ typedef struct {
     int fileIDI;
     char fileName[256];
 } fileInfo;
-
-//typedef struct {
-//    user* friends[100];
-//} friendlist;
 
 fileInfo *fileList[9999];
 user *users[10];
@@ -348,7 +344,8 @@ void deleteUser(char* name) {
 }
 
 void sendFileServ(char* filename,int newsockfd) {
-    FILE *filePointer;
+    //TODO 1 : Send from server to specific user
+    /*FILE *filePointer;
     char data[1024] = {0};
     char buffer[256];
 
@@ -363,34 +360,21 @@ void sendFileServ(char* filename,int newsockfd) {
         fclose(filePointer);
     } else {
         printf("File not found!\n");
-    }
+    }*/
 }
 
 void getFileInfoServ(int newsockfd) {
-    char buffer[10];
+    char buffer[256];
     char filename[256];
     char from[10];
     char to[10];
-    char* msg;
 
     fileInfo *new = (fileInfo *) malloc(sizeof (fileInfo));
     new->fileIDI = fileIdS;
 
-
-    bzero(buffer,10);
-    chScRErr(read(newsockfd, buffer, 10));
-    strcpy(filename,buffer);
-    strcpy(new->fileName,filename);
-
-    bzero(buffer,10);
-    chScRErr(read(newsockfd, buffer, 10));
-    strcpy(from,buffer);
-    strcpy(new->fromUser,from);
-
-    bzero(buffer,10);
-    chScRErr(read(newsockfd, buffer, 10));
-    strcpy(to,buffer);
-    strcpy(new->toUser,to);
+    bzero(buffer,256);
+    chScRErr(read(newsockfd, buffer, 256));
+    sscanf(buffer, "%s %s %s", new->fileName, new->fromUser,new->toUser);
 
     for (int i = 0; i < filesCount; ++i) {
         if(!fileList[i]){
@@ -404,12 +388,20 @@ void rcvFileServ(int newsockfd) {
     FILE *filepointer;
     char buffer[1024];
     char directory[100] = "files/";
-    char type[5] = ".txt";
+    char type[5] = ".fl";
     char sId[10];
+
+    struct stat st = {0};
+    if (stat(directory, &st) == -1) {
+        mkdir(directory, 0700);
+    }
 
     sprintf(sId,"%i",fileIdS);
     strcat(directory,sId);
     strcat(directory,type);
+
+    filesCount++;
+    getFileInfoServ(newsockfd);
 
     filepointer = fopen(directory, "w");
     while (1) {
@@ -420,8 +412,6 @@ void rcvFileServ(int newsockfd) {
         fprintf(filepointer, "%s", buffer);
         bzero(buffer, 1024);
     }
-    filesCount++;
-    getFileInfoServ(newsockfd);
     fileIdS++;
 }
 
@@ -455,14 +445,15 @@ int server(int argc, char *argv[])
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
     //signal(SIGPIPE, SIG_IGN);
-    //updateAccountsLoad();
     //deleteUser("Pepa");
-   // welcomeServ(newsockfd);
     //authServ(newsockfd);
     //registerUser(newsockfd);
     //loggedMenuServ(newsockfd);
     //rcvFileServ(newsockfd);
-    getFileInfoServ(newsockfd);
+    //getFileInfoServ(newsockfd);
+
+    updateAccountsLoad();
+    welcomeServ(newsockfd);
     exit(0);
 
     for (;;) {
@@ -516,9 +507,11 @@ void manageRequests(int newsockfd, char *username) {
         bzero(buffer,256);
         strcpy(buffer, "Here is list of people who want to be your friends: \n");
         for (int i = 0; i < managingUser->numReq; ++i) {
-            int val = i +1;
-            //char num = val +'0';          Nefunkcna konverzia int na char, kvoli tomuto nie su poradove cisla
-            //strcat(buffer, num);
+            int val = i;
+            char sid[3];
+            sprintf(sid,"%i",val);
+            strcat(buffer, sid);
+            strcat(buffer, ". ");
             strcat(buffer, managingUser->requests[i]->fromUser);
             strcat(buffer, "\n");
         }

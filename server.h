@@ -9,6 +9,7 @@ void updateAccountsLoad();
 void updateAccountsSave();
 void registerUser(int newsockfd);
 void deleteUser(char* name);
+void rcvFileServ(int newsockfd);
 int server(int argc, char *argv[]);
 
 

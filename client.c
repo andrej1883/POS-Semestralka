@@ -11,10 +11,7 @@
 #include "client.h"
 #include "server.h"
 
-
-//char* myName;
-char myName[] = "Jozo";
-
+char myName[10];
 
 void authClie(int sockfd) {
     char buffer[256];
@@ -115,45 +112,24 @@ void registerClie(int sockfd) {
 }
 
 void sendFileInfoCLie(int sockfd, char *filename, char *toUser) {
-    char buffer[10];
-    char* msg;
+    char buffer[256];
 
-    msg = "hh.txt";
     bzero(buffer,sizeof (buffer));
-    strcpy(buffer,filename);
+    strcat(buffer,filename);
+    strcat(buffer," ");
+    strcat(buffer,myName);
+    strcat(buffer," ");
+    strcat(buffer,toUser);
     chScWErr(write(sockfd, buffer, sizeof (buffer)));
-    msg = "Jojo";
     bzero(buffer,sizeof (buffer));
-    strcpy(buffer,myName);
-
-    chScWErr(write(sockfd, buffer, sizeof (buffer)));
-    msg = "Pepa";
-    bzero(buffer,sizeof (buffer));
-    strcpy(buffer,toUser);
-
-    chScWErr(write(sockfd, buffer, sizeof (buffer)));
-
-
-
-    /*bzero(buffer, 10); //vynulujem buffer
-    strcpy(buffer,myName);
-    chScWErr(write(sockfd, buffer, strlen(buffer)));
-
-    bzero(buffer, 10); //vynulujem buffer
-    strcpy(buffer,toUser);
-    chScWErr(write(sockfd, buffer, strlen(buffer)));
-
-    bzero(buffer, 10); //vynulujem buffer
-    strcpy(buffer,filename);
-    chScWErr(write(sockfd, buffer, strlen(buffer)));*/
-
 }
 
 void sendFileClie(char* filename,int sockfd, char* toUser) {
     FILE *filePointer;
     char data[1024] = {0};
-
+    trimNL(filename,sizeof (filename));
     if( access( filename, F_OK ) == 0 ) {
+        sendFileInfoCLie(sockfd,filename,toUser);
         filePointer = fopen(filename, "r") ;
         while( fgets ( data, 1024, filePointer ) != NULL )
         {
@@ -161,14 +137,14 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
         }
         bzero(data, 1024);
         fclose(filePointer);
-        sendFileInfoCLie(sockfd,filename,toUser);
     } else {
         printf("File not found!\n");
     }
 }
 
 void rcvFileCli(int newsockfd) {
-    int n;
+    //TODO 2: Get files from server
+    /*int n;
     FILE *filepointer;
     char *filename = "files/rcv.txt";
     char buffer[1024];
@@ -186,7 +162,7 @@ void rcvFileCli(int newsockfd) {
         }
         fprintf(filepointer, "%s", buffer);
         bzero(buffer, 1024);
-    }
+    }*/
 }
 
 int client(int argc, char *argv[])
@@ -228,10 +204,11 @@ int client(int argc, char *argv[])
     //signal(SIGPIPE, SIG_IGN);
     //authClie(sockfd);
     //registerClie(sockfd);
-    //welcomeCli(sockfd);
     //loggedMenuCli(sockfd,"Lojzik");
     //sendFileClie("file.txt", sockfd,"Pepa");
-    sendFileInfoCLie(sockfd,"file.txt","Pepas");
+    //sendFileInfoCLie(sockfd,"file.txt","Pepas");
+
+    welcomeCli(sockfd);
     exit(0);
     for(;;) {
         printf("Please enter a message: ");
