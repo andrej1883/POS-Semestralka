@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <sys/stat.h>
 #include "errors.h"
 #include "clientHandler.h"
 #include "client.h"
@@ -120,6 +121,7 @@ void registerClie(int sockfd) {
 }
 
 void sendFileInfoCLie(int sockfd, char *filename, char *toUser) {
+    //funguje
     char buffer[256];
 
     bzero(buffer,sizeof (buffer));
@@ -133,6 +135,7 @@ void sendFileInfoCLie(int sockfd, char *filename, char *toUser) {
 }
 
 void sendFileClie(char* filename,int sockfd, char* toUser) {
+    //funguej
     FILE *filePointer;
     char data[1024] = {0};
     trimNL(filename,sizeof (filename));
@@ -150,27 +153,55 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
     }
 }
 
-void rcvFileCli(int newsockfd) {
+void rcvFileCli(int sockfd) {
     //TODO 2: Get files from server
-    /*int n;
-    FILE *filepointer;
-    char *filename = "files/rcv.txt";
-    char buffer[1024];
-    char username[10];
+    //send your name  to server
+    char buffer[256];
+    char filename[256];
+    char fileBuffer[1024];
 
-    bzero(username,10); //vynulujem buffer
-    chScRErr(read(newsockfd, username, 10));
-    trimNL(username,sizeof (username));
+    bzero(buffer, sizeof(buffer));
+    strcpy(buffer, myName);
+    chScWErr(write(sockfd, buffer, sizeof(buffer)));
 
-    filepointer = fopen(filename, "w");
-    while (1) {
-        n = recv(newsockfd, buffer, 1024, 0);
-        if (n <= 0){
-            break;
+    printf("Here are files for you: \n");
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
+    if (strcmp(buffer, "There are no available files for you\n") != 0) {
+
+        printf("Please enter number of file: ");
+        bzero(buffer, 256); //vynulujem buffer
+        fgets(buffer, 255, stdin); //naplnim buffer
+        chScWErr(write(sockfd, buffer, strlen(buffer)));
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+        strcpy(filename, buffer);
+
+        int n;
+        FILE *filepointer;
+        char directory[100] = "downloadedFiles/";
+
+        struct stat st = {0};
+        if (stat(directory, &st) == -1) {
+            mkdir(directory, 0700);
         }
-        fprintf(filepointer, "%s", buffer);
-        bzero(buffer, 1024);
-    }*/
+
+        strcat(directory, filename);
+
+        filepointer = fopen(directory, "w");
+        while (1) {
+            n = recv(sockfd, fileBuffer, 1024, 0);
+            if (n <= 0) {
+                break;
+            }
+            fprintf(filepointer, "%s", fileBuffer);
+            bzero(fileBuffer, 1024);
+        }
+    }
+    loggedMenuCli(sockfd, myName);
 }
 
 int client(int argc, char *argv[])

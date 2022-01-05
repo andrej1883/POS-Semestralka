@@ -15,7 +15,9 @@ void manageRequestsClie(int sockfd);
 void removeFriendClie(int sockfd);
 void backTologMenu(int sockfd);
 void sendMessageClie(int sockfd);
-void sendFileClie(char* filename,int sockfd, char* toUser);
+void sendFileClie(char *filename, int sockfd, char *toUser);
+
+void rcvFileCli(int newsockfd);
 
 
 void addMemberClie(int sockfd);

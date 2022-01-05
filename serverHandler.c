@@ -10,21 +10,25 @@
 #include "errors.h"
 #include "server.h"
 
+char username[10];
+
 void welcomeServ(int newsockfd) {
     char buffer[10];
     int exitFlag = 0;
     int option;
-    char* msg;
+    char *msg;
+
+    bzero(username, sizeof(username));
 
     while (exitFlag == 0) {
-        bzero(buffer,10); //vynulujem buffer
+        bzero(buffer, 10); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 10));
 
         option = atoi(buffer);
         switch (option) {
             case 1:
                 msg = "Option 1\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                chScWErr(write(newsockfd, msg, strlen(msg) + 1));
                 exitFlag = 1;
                 registerUser(newsockfd);
                 break;
@@ -40,6 +44,7 @@ void welcomeServ(int newsockfd) {
                 exit(0);
 
             default:
+                printf("welcomeMenu cycle\n");
                 msg = "Choose correct option!\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
         }
@@ -50,15 +55,17 @@ void loggedMenuServ(int newsockfd) {
     char buffer[10];
     int exitFlag = 0;
     int option;
-    char* msg;
-    char username[10];
+    char *msg;
 
-    bzero(username,10); //vynulujem buffer
-    chScRErr(read(newsockfd, username, 10));
-    trimNL(username,sizeof (username));
+    if (username[1] == '\000') {
+        bzero(username, sizeof(username));
+        chScRErr(read(newsockfd, username, 10));
+        trimNL(username, sizeof(username));
+    }
+
 
     while (exitFlag == 0) {
-        bzero(buffer,10); //vynulujem buffer
+        bzero(buffer, 10); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 10));
 
         option = atoi(buffer);
@@ -86,7 +93,7 @@ void loggedMenuServ(int newsockfd) {
                 break;
             case 6:
                 exitFlag = 1;
-                fileMenuServ(newsockfd, username);
+                fileMenuServ(newsockfd);
                 break;
             case 7:
                 exitFlag = 1;
@@ -102,9 +109,11 @@ void loggedMenuServ(int newsockfd) {
                 exit(0);
 
             default:
+                printf("loggedMenu cycle\n");
                 exitFlag = 0;
                 msg = "Choose correct option!\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                chScWErr(write(newsockfd, msg, strlen(msg) + 1));
+                loggedMenuServ(newsockfd);
         }
     }
 }
@@ -135,20 +144,21 @@ void msgMenuServ(int newsockfd, char *username) {
                 break;
 
             default:
+                printf("msgMenu cycle\n");
                 msg = "Choose correct option!\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
         }
     }
 }
 
-void fileMenuServ(int newsockfd, char *username) {
+void fileMenuServ(int newsockfd) {
     char buffer[10];
     int exitFlag = 0;
     int option;
-    char* msg;
+    char *msg;
 
     while (exitFlag == 0) {
-        bzero(buffer,10); //vynulujem buffer
+        bzero(buffer, 10); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 10));
 
         option = atoi(buffer);
@@ -159,7 +169,7 @@ void fileMenuServ(int newsockfd, char *username) {
                 break;
             case 2:
                 exitFlag = 1;
-                getMessages(newsockfd, username);
+                sendFileServ(newsockfd);
                 break;
             case 3:
                 exitFlag = 1;
@@ -167,6 +177,7 @@ void fileMenuServ(int newsockfd, char *username) {
                 break;
 
             default:
+                printf("fileMenu cycle\n");
                 msg = "Choose correct option!\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
         }

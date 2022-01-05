@@ -205,12 +205,11 @@ void fileMenuCli(int sockfd) {
                 break;
             case 2:
                 exitFlag = 1;
-                getMessagesClie(sockfd);
+                rcvFileCli(sockfd);
                 break;
             case 3:
                 exitFlag = 1;
                 backTologMenu(sockfd);
-
                 break;
             default:
                 bzero(buffer, 256); //vynulujem buffer

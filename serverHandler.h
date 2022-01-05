@@ -8,7 +8,9 @@
 void welcomeServ(int newsockfd);
 void loggedMenuServ(int newsockfd);
 void msgMenuServ(int newsockfd, char *username);
-void fileMenuServ(int newsockfd, char *username);
+
+void fileMenuServ(int newsockfd);
+
 void groupMenuServ(int newsockfd, char *username);
 
 #endif //CHAT_SERVERHANDLER_H

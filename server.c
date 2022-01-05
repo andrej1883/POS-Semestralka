@@ -212,20 +212,105 @@ void updateAccountsSave() {
     filePointer = fopen("users.txt", "w");
 
     for (int i = 0; i < numberUsers; ++i) {
-        fputs(users[i]->username,filePointer);
+        fputs(users[i]->username, filePointer);
         fputs(" ", filePointer);
-        fputs(users[i]->passwd,filePointer);
+        fputs(users[i]->passwd, filePointer);
         fputs("\n", filePointer);
     }
 
     fclose(filePointer);
 }
 
-void addMessage( char* toUserName, char* text, char* fromUserName)
-{
-    user * toUser = (user*) malloc(sizeof (user));
+void updateFileLogLoad() {
+    //funguje
+    FILE *filePointer;
+    char line[50];
+
+    if (access("file_log_count.txt", F_OK) == 0) {
+        filePointer = fopen("file_log_count.txt", "r");
+        while (fgets(line, 50, filePointer) != NULL) {
+            int count, id;
+            sscanf(line, "%d %d", &count, &id);
+            if (filesCount < 9999) {
+                filesCount = count;
+                fileIdS = id;
+            }
+        }
+        fclose(filePointer);
+    } else {
+        printf("file_log_count file not found!\n");
+    }
+
+    if (access("file_log.txt", F_OK) == 0) {
+        filePointer = fopen("file_log.txt", "r");
+        while (fgets(line, 50, filePointer) != NULL) {
+            int id;
+            char from[10], to[10], filename[256];
+            sscanf(line, "%i %s" "%s %s", &id, from, to, filename);
+            trimNL(from, sizeof(from));
+            trimNL(to, sizeof(to));
+            trimNL(filename, sizeof(filename));
+
+            if (filesCount < 9999) {
+                fileInfo *new = (fileInfo *) malloc(sizeof(fileInfo));
+                strcpy(new->fileName, filename);
+                strcpy(new->toUser, to);
+                strcpy(new->fromUser, from);
+
+                new->fileIDI = id;
+                for (int i = 0; i < filesCount; ++i) {
+                    if (!fileList[i]) {
+                        fileList[i] = new;
+                        break;
+                    }
+                }
+            }
+        }
+        fclose(filePointer);
+    } else {
+        printf("file_log file not found!\n");
+    }
+}
+
+void updateFileLogSave() {
+    //funguje
+    FILE *filePointer;
+    remove("file_log_count.txt");
+    filePointer = fopen("file_log_count.txt", "w+");
+
+    char sId[10], SID[10];
+    char counts[20];
+    sprintf(sId, "%d", filesCount);
+    strcpy(counts, sId);
+    sprintf(SID, "%d", fileIdS);
+    strcat(counts, " ");
+    strcat(counts, SID);
+    fputs(counts, filePointer);
+
+    fclose(filePointer);
+
+    FILE *filePointer2;
+    remove("file_log.txt");
+    filePointer2 = fopen("file_log.txt", "w");
+    for (int i = 0; i < filesCount; ++i) {
+        char sId[10];
+        sprintf(sId, "%i", fileList[i]->fileIDI);
+        fputs(sId, filePointer2);
+        fputs(" ", filePointer2);
+        fputs(fileList[i]->fromUser, filePointer2);
+        fputs(" ", filePointer2);
+        fputs(fileList[i]->toUser, filePointer2);
+        fputs(" ", filePointer2);
+        fputs(fileList[i]->fileName, filePointer2);
+        fputs("\n", filePointer2);
+    }
+    fclose(filePointer2);
+}
+
+void addMessage(char *toUserName, char *text, char *fromUserName) {
+    user *toUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, toUserName) == 0){
+        if (strcmp(users[i]->username, toUserName) == 0) {
             toUser = users[i];
         }
     }
@@ -357,15 +442,113 @@ void deleteUser(char* name) {
 
 }
 
-void sendFileServ(char* filename,int newsockfd) {
+void sendFileServ(int newsockfd) {
     //TODO 1 : Send from server to specific user
-    /*FILE *filePointer;
-    char data[1024] = {0};
+    char current[10];
     char buffer[256];
 
+    //receive name of current user from client
+    bzero(current, 10);
+    chScRErr(read(newsockfd, current, 10));
+    trimNL(current, sizeof(current));
 
-    if( access( filename, F_OK ) == 0 ) {
-        filePointer = fopen(filename, "r") ;
+    //creating temporary fileList
+    fileInfo *temporary[9999];
+
+    int found = 0;
+    for (int i = 0; i < filesCount; ++i) {
+        if (strcmp(fileList[i]->toUser, current) == 0) {
+            fileInfo *foundInfo = (fileInfo *) malloc(sizeof(fileInfo));
+            strcpy(foundInfo->toUser, fileList[i]->toUser);
+            strcpy(foundInfo->fromUser, fileList[i]->fromUser);
+            strcpy(foundInfo->fileName, fileList[i]->fileName);
+            foundInfo->fileIDI = fileList[i]->fileIDI;
+            for (int j = 0; j < 9999; ++j) {
+                if (!temporary[j]) {
+                    temporary[j] = foundInfo;
+                }
+            }
+            found++;
+        }
+    }
+    if (found > 0) {
+        bzero(buffer, sizeof(buffer));
+        strcpy(buffer, "Here are your files: \n");
+        for (int i = 0; i < found; ++i) {
+            char sid[4];
+            sprintf(sid, "%i", i);
+            strcat(buffer, sid);
+            strcat(buffer, ". File: ");
+            strcat(buffer, temporary[i]->fileName);
+            strcat(buffer, " From: ");
+            strcat(buffer, temporary[i]->fromUser);
+            strcat(buffer, "\n");
+            chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+            bzero(buffer, 256); //vynulujem buffer
+            chScRErr(read(newsockfd, buffer, 256));
+
+            int chosenReq;
+            sscanf(buffer, "%d", &chosenReq);
+
+            char file[100] = "files/";
+            char type[5] = ".fl";
+            char sId[10];
+
+
+            sprintf(sId, "%i", temporary[chosenReq]->fileIDI);
+            strcat(file, sId);
+            strcat(file, type);
+
+            FILE *filePointer;
+            char data[1024] = {0};
+            trimNL(file, sizeof(file));
+            if (access(file, F_OK) == 0) {
+                bzero(buffer, sizeof(buffer));
+                strcpy(buffer, temporary[chosenReq]->fileName);
+                chScWErr(write(newsockfd, buffer, strlen(buffer)));
+                filePointer = fopen(file, "r");
+                while (fgets(data, 1024, filePointer) != NULL) {
+                    chSFErr(send(newsockfd, data, sizeof(data), 0));
+                }
+                bzero(data, 1024);
+                fclose(filePointer);
+            } else {
+                printf("File not found!\n");
+            }
+        }
+    } else {
+        bzero(buffer, sizeof(buffer));
+        strcpy(buffer, "There are no available files for you\n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+    }
+    loggedMenuServ(newsockfd);
+    /*//sending file list/no files message
+    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    //user option(which file)
+    bzero(buffer,256); //vynulujem buffer
+    chScRErr(read(newsockfd, buffer, 256));
+
+    int chosenReq;
+    sscanf(buffer, "%d", &chosenReq);
+
+    char file[100] = "files/";
+    char type[5] = ".fl";
+    char sId[10];
+
+
+    sprintf(sId,"%i",temporary[chosenReq]->fileIDI);
+    strcat(file,sId);
+    strcat(file,type);
+
+    FILE *filePointer;
+    char data[1024] = {0};
+    trimNL(file,sizeof (file));
+    if( access( file, F_OK ) == 0 ) {
+        bzero(buffer,sizeof (buffer));
+        strcpy(buffer,temporary[chosenReq]->fileName);
+        chScWErr(write(newsockfd,buffer, strlen(buffer)));
+        filePointer = fopen(file, "r") ;
         while( fgets ( data, 1024, filePointer ) != NULL )
         {
             chSFErr(send(newsockfd,data,sizeof (data),0));
@@ -378,26 +561,29 @@ void sendFileServ(char* filename,int newsockfd) {
 }
 
 void getFileInfoServ(int newsockfd) {
+    //funguje
     char buffer[256];
     char filename[256];
     char from[10];
     char to[10];
 
-    fileInfo *new = (fileInfo *) malloc(sizeof (fileInfo));
-    new->fileIDI = fileIdS;
+    fileInfo *new = (fileInfo *) malloc(sizeof(fileInfo));
 
-    bzero(buffer,256);
+    bzero(buffer, 256);
     chScRErr(read(newsockfd, buffer, 256));
-    sscanf(buffer, "%s %s %s", new->fileName, new->fromUser,new->toUser);
-
+    sscanf(buffer, "%s %s %s", new->fileName, new->fromUser, new->toUser);
+    new->fileIDI = fileIdS;
+    fileIdS++;
     for (int i = 0; i < filesCount; ++i) {
-        if(!fileList[i]){
+        if (!fileList[i]) {
             fileList[i] = new;
+            updateFileLogSave();
         }
     }
 }
 
 void rcvFileServ(int newsockfd) {
+    //funguje
     int n;
     FILE *filepointer;
     char buffer[1024];
@@ -426,7 +612,6 @@ void rcvFileServ(int newsockfd) {
         fprintf(filepointer, "%s", buffer);
         bzero(buffer, 1024);
     }
-    fileIdS++;
 }
 
 int server(int argc, char *argv[])
@@ -467,6 +652,7 @@ int server(int argc, char *argv[])
     //getFileInfoServ(newsockfd);
 
     updateAccountsLoad();
+    updateFileLogLoad();
     welcomeServ(newsockfd);
     exit(0);
 
