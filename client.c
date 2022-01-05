@@ -15,6 +15,7 @@
 //char* myName;
 char myName[] = "Jozo";
 
+
 void authClie(int sockfd) {
     char buffer[256];
 
