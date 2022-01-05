@@ -37,13 +37,22 @@ typedef struct {
     fRequest *requests[10];
 } user;
 
+typedef struct {
+    char fromUser[10];
+    char toUser[10];
+    int fileIDI;
+    char fileName[256];
+} fileInfo;
+
 //typedef struct {
 //    user* friends[100];
 //} friendlist;
 
+fileInfo *fileList[9999];
 user *users[10];
 int numberUsers = 0;
-int fileId = 0;
+int fileIdS = 0;
+int filesCount = 0;
 
 void trimNL(char* arr, int length) {
     for (int i = 0; i < length; ++i) {
@@ -338,18 +347,71 @@ void deleteUser(char* name) {
 
 }
 
+void sendFileServ(char* filename,int newsockfd) {
+    FILE *filePointer;
+    char data[1024] = {0};
+    char buffer[256];
+
+
+    if( access( filename, F_OK ) == 0 ) {
+        filePointer = fopen(filename, "r") ;
+        while( fgets ( data, 1024, filePointer ) != NULL )
+        {
+            chSFErr(send(newsockfd,data,sizeof (data),0));
+        }
+        bzero(data, 1024);
+        fclose(filePointer);
+    } else {
+        printf("File not found!\n");
+    }
+}
+
+void getFileInfoServ(int newsockfd) {
+    char buffer[10];
+    char filename[256];
+    char from[10];
+    char to[10];
+    char* msg;
+
+    fileInfo *new = (fileInfo *) malloc(sizeof (fileInfo));
+    new->fileIDI = fileIdS;
+
+
+    bzero(buffer,10);
+    chScRErr(read(newsockfd, buffer, 10));
+    strcpy(filename,buffer);
+    strcpy(new->fileName,filename);
+
+    bzero(buffer,10);
+    chScRErr(read(newsockfd, buffer, 10));
+    strcpy(from,buffer);
+    strcpy(new->fromUser,from);
+
+    bzero(buffer,10);
+    chScRErr(read(newsockfd, buffer, 10));
+    strcpy(to,buffer);
+    strcpy(new->toUser,to);
+
+    for (int i = 0; i < filesCount; ++i) {
+        if(!fileList[i]){
+            fileList[i] = new;
+        }
+    }
+}
+
 void rcvFileServ(int newsockfd) {
     int n;
     FILE *filepointer;
-    char *filename = "files/rcv.txt";
     char buffer[1024];
-    char username[10];
+    char directory[100] = "files/";
+    char type[5] = ".txt";
+    char sId[10];
 
-    bzero(username,10); //vynulujem buffer
-    chScRErr(read(newsockfd, username, 10));
-    trimNL(username,sizeof (username));
+    sprintf(sId,"%i",fileIdS);
+    strcat(directory,sId);
+    strcat(directory,type);
 
-    filepointer = fopen(filename, "w");
+    filepointer = fopen(directory, "w");
     while (1) {
         n = recv(newsockfd, buffer, 1024, 0);
         if (n <= 0){
@@ -358,6 +420,9 @@ void rcvFileServ(int newsockfd) {
         fprintf(filepointer, "%s", buffer);
         bzero(buffer, 1024);
     }
+    filesCount++;
+    getFileInfoServ(newsockfd);
+    fileIdS++;
 }
 
 int server(int argc, char *argv[])
@@ -389,15 +454,16 @@ int server(int argc, char *argv[])
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-    signal(SIGPIPE, SIG_IGN);
-    updateAccountsLoad();
+    //signal(SIGPIPE, SIG_IGN);
+    //updateAccountsLoad();
     //deleteUser("Pepa");
    // welcomeServ(newsockfd);
     //authServ(newsockfd);
     //registerUser(newsockfd);
     //loggedMenuServ(newsockfd);
-    rcvFileServ(newsockfd);
-
+    //rcvFileServ(newsockfd);
+    getFileInfoServ(newsockfd);
+    exit(0);
 
     for (;;) {
         bzero(buffer,256); //vynulujem buffer

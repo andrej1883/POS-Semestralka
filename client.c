@@ -9,9 +9,11 @@
 #include "errors.h"
 #include "clientHandler.h"
 #include "client.h"
+#include "server.h"
 
 
-char myName[10];
+//char* myName;
+char myName[] = "Jozo";
 
 void authClie(int sockfd) {
     char buffer[256];
@@ -111,14 +113,44 @@ void registerClie(int sockfd) {
     }
 }
 
-void sendFileClie(char* filename,int sockfd) {
-    FILE *filePointer;
-    char data[1024] = {0};
-    char buffer[256];
+void sendFileInfoCLie(int sockfd, char *filename, char *toUser) {
+    char buffer[10];
+    char* msg;
 
-    bzero(buffer, 256); //vynulujem buffer
+    msg = "hh.txt";
+    bzero(buffer,sizeof (buffer));
+    strcpy(buffer,filename);
+    chScWErr(write(sockfd, buffer, sizeof (buffer)));
+    msg = "Jojo";
+    bzero(buffer,sizeof (buffer));
+    strcpy(buffer,myName);
+
+    chScWErr(write(sockfd, buffer, sizeof (buffer)));
+    msg = "Pepa";
+    bzero(buffer,sizeof (buffer));
+    strcpy(buffer,toUser);
+
+    chScWErr(write(sockfd, buffer, sizeof (buffer)));
+
+
+
+    /*bzero(buffer, 10); //vynulujem buffer
     strcpy(buffer,myName);
     chScWErr(write(sockfd, buffer, strlen(buffer)));
+
+    bzero(buffer, 10); //vynulujem buffer
+    strcpy(buffer,toUser);
+    chScWErr(write(sockfd, buffer, strlen(buffer)));
+
+    bzero(buffer, 10); //vynulujem buffer
+    strcpy(buffer,filename);
+    chScWErr(write(sockfd, buffer, strlen(buffer)));*/
+
+}
+
+void sendFileClie(char* filename,int sockfd, char* toUser) {
+    FILE *filePointer;
+    char data[1024] = {0};
 
     if( access( filename, F_OK ) == 0 ) {
         filePointer = fopen(filename, "r") ;
@@ -128,8 +160,31 @@ void sendFileClie(char* filename,int sockfd) {
         }
         bzero(data, 1024);
         fclose(filePointer);
+        sendFileInfoCLie(sockfd,filename,toUser);
     } else {
         printf("File not found!\n");
+    }
+}
+
+void rcvFileCli(int newsockfd) {
+    int n;
+    FILE *filepointer;
+    char *filename = "files/rcv.txt";
+    char buffer[1024];
+    char username[10];
+
+    bzero(username,10); //vynulujem buffer
+    chScRErr(read(newsockfd, username, 10));
+    trimNL(username,sizeof (username));
+
+    filepointer = fopen(filename, "w");
+    while (1) {
+        n = recv(newsockfd, buffer, 1024, 0);
+        if (n <= 0){
+            break;
+        }
+        fprintf(filepointer, "%s", buffer);
+        bzero(buffer, 1024);
     }
 }
 
@@ -169,12 +224,14 @@ int client(int argc, char *argv[])
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-    signal(SIGPIPE, SIG_IGN);
+    //signal(SIGPIPE, SIG_IGN);
     //authClie(sockfd);
     //registerClie(sockfd);
     //welcomeCli(sockfd);
     //loggedMenuCli(sockfd,"Lojzik");
-    sendFileClie("file.txt", sockfd);
+    //sendFileClie("file.txt", sockfd,"Pepa");
+    sendFileInfoCLie(sockfd,"file.txt","Pepas");
+    exit(0);
     for(;;) {
         printf("Please enter a message: ");
         bzero(buffer, 256); //vynulujem buffer
