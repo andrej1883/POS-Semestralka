@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include "errors.h"
 #include "clientHandler.h"
 #include "client.h"
@@ -153,54 +154,61 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
     }
 }
 
+char* getFilename(int sockfd) {
+
+}
+
 void rcvFileCli(int sockfd) {
     //TODO 2: Get files from server
     //send your name  to server
     char buffer[256];
-    char filename[256];
-    char fileBuffer[1024];
+
     strcpy(myName, "Pepa");
     bzero(buffer, sizeof(buffer));
     strcpy(buffer, myName);
-    chScWErr(write(sockfd, buffer, sizeof(buffer)));
+    //chScWErr(write(sockfd, buffer, sizeof(buffer)));
+    send(sockfd,buffer,10,MSG_EOR);
 
-    printf("Here are files for you: \n");
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+
+    bzero(buffer, sizeof (buffer)); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, sizeof (buffer))); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     if (strcmp(buffer, "There are no available files for you\n") != 0) {
 
         printf("Please enter number of file: ");
-        bzero(buffer, 256); //vynulujem buffer
-        fgets(buffer, 255, stdin); //naplnim buffer
-        chScWErr(write(sockfd, buffer, strlen(buffer)));
-
-        bzero(buffer, 256); //vynulujem buffer
-        chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-        strcpy(filename, buffer);
+        bzero(buffer, sizeof (buffer)); //vynulujem buffer
+        fgets(buffer, sizeof (buffer), stdin); //naplnim buffer
+        chScWErr(write(sockfd, buffer, sizeof (buffer)));
 
         int n;
         FILE *filepointer;
+        char filename[256];
+        char fileBuffer[1024];
         char directory[100] = "downloadedFiles/";
 
 
         struct stat st = {0};
         if (stat(directory, &st) == -1) {
             mkdir(directory, 0700);
-
-            strcat(directory, myName);
-            strcat(directory, "/");
-
-            if (stat(directory, &st) == -1) {
-                mkdir(directory, 0700);
-            }
         }
+        strcat(directory, myName);
+        strcat(directory, "/");
+        if (stat(directory, &st) == -1) {
+            mkdir(directory, 0700);
+        }
+
+        bzero(buffer, sizeof (buffer)); //vynulujem buffer
+        //chScRErr(read(sockfd, buffer,sizeof (buffer))); //precitam spravu zo servera
+        n = recv(sockfd, buffer, 20, MSG_WAITALL);
+        if(n < 0){
+            perror("Receive name Error:");
+        }
+        strcpy(filename, buffer);
 
         strcat(directory, filename);
 
         bzero(fileBuffer, sizeof(fileBuffer));
-
         filepointer = fopen(directory, "w");
         while (1) {
             n = recv(sockfd, fileBuffer, 1024, 0);
@@ -249,16 +257,28 @@ int client(int argc, char *argv[])
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
+    // Set the socket I/O mode: In this case FIONBIO
+    // enables or disables the blocking mode for the
+    // socket based on the numerical value of iMode.
+    // If iMode = 0, blocking is enabled;
+    // If iMode != 0, non-blocking mode is enabled.
+    ioctl(sockfd, FIONBIO, 0);
+
     //signal(SIGPIPE, SIG_IGN);
+
     //authClie(sockfd);
     //registerClie(sockfd);
     //loggedMenuCli(sockfd,"Lojzik");
     //sendFileClie("file.txt", sockfd,"Pepa");
     //sendFileInfoCLie(sockfd,"file.txt","Pepas");
 
-    // welcomeCli(sockfd);
+
+
+
+    //welcomeCli(sockfd);
     rcvFileCli(sockfd);
     exit(0);
+
     for (;;) {
         printf("Please enter a message: ");
         bzero(buffer, 256); //vynulujem buffer

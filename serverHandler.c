@@ -70,6 +70,9 @@ void loggedMenuServ(int newsockfd) {
 
         option = atoi(buffer);
         switch (option) {
+            case 0:
+                sendFileServ(newsockfd);
+                break;
             case 1:
                 deleteUser(username);
                 welcomeServ(newsockfd);

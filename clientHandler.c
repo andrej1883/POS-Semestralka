@@ -70,6 +70,7 @@ void loggedMenuCli(int sockfd, char name[10]) {
     while(exitFlag == 0) {
         printf("What you want to do?\n");
         printf("Select your option: \n");
+        printf("0. Test download\n");
         printf("1. Delete account\n");
         printf("2. Log out\n");
         printf("3. Add friend\n");
@@ -87,6 +88,9 @@ void loggedMenuCli(int sockfd, char name[10]) {
         option  = atoi(buffer);
 
         switch (option) {
+            case 0:
+                rcvFileCli(sockfd);
+                break;
             case 1:
                 exitFlag = 1;
                 welcomeCli(sockfd);

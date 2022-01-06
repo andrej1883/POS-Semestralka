@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include "errors.h"
 #include "serverHandler.h"
 #include "server.h"
@@ -446,11 +447,18 @@ void sendFileServ(int newsockfd) {
     char current[10];
     char buffer[256];
     char loaded[10];
+    int n;
 
     //receive name of current user from client
-    bzero(current, 10);
+   /* bzero(current, sizeof (buffer));
     chScRErr(read(newsockfd, current, 10));
-    trimNL(current, sizeof(current));
+    trimNL(current, sizeof(current));*/
+
+    bzero(current, sizeof (current));
+    n = recv(newsockfd, current, sizeof(current), MSG_WAITALL);
+    if(n < 0){
+        perror("Receive name Error:");
+    }
 
     //creating temporary fileList
     fileInfo *temporary[9999];
@@ -488,8 +496,14 @@ void sendFileServ(int newsockfd) {
         }
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-        bzero(buffer, 256); //vynulujem buffer
-        chScRErr(read(newsockfd, buffer, 256));
+        /*bzero(buffer, sizeof (buffer)); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, sizeof(buffer)));*/
+
+        bzero(buffer, sizeof (buffer));
+        n = recv(newsockfd, buffer, sizeof(buffer), MSG_WAITALL);
+        if(n < 0){
+            perror("Receive name Error:");
+        }
 
         int chosenReq;
         sscanf(buffer, "%d", &chosenReq);
@@ -507,11 +521,15 @@ void sendFileServ(int newsockfd) {
         char data[1024] = {0};
         trimNL(file, sizeof(file));
         if (access(file, F_OK) == 0) {
+
             bzero(buffer, sizeof(buffer));
             strcpy(buffer, temporary[chosenReq]->fileName);
-            chScWErr(write(newsockfd, buffer, strlen(buffer)));
+           // chScWErr(write(newsockfd, buffer, strlen(buffer)));
+            send(newsockfd,buffer,20,MSG_EOR);
+
             filePointer = fopen(file, "r");
-            while (fgets(data, 1024, filePointer) != NULL) {
+            while (fgets(data, 1024, filePointer) != NULL)
+            {
                 chSFErr(send(newsockfd, data, sizeof(data), 0));
             }
             bzero(data, 1024);
@@ -647,7 +665,19 @@ int server(int argc, char *argv[]) {
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
+    // Set the socket I/O mode: In this case FIONBIO
+    // enables or disables the blocking mode for the
+    // socket based on the numerical value of iMode.
+    // If iMode = 0, blocking is enabled;
+    // If iMode != 0, non-blocking mode is enabled.
+    ioctl(sockfd, FIONBIO, 0);
+
     //signal(SIGPIPE, SIG_IGN);
+
+    updateAccountsLoad();
+    updateFileLogLoad();
+
+
     //deleteUser("Pepa");
     //authServ(newsockfd);
     //registerUser(newsockfd);
@@ -655,10 +685,10 @@ int server(int argc, char *argv[]) {
     //rcvFileServ(newsockfd);
     //getFileInfoServ(newsockfd);
 
-    updateAccountsLoad();
-    updateFileLogLoad();
-    sendFileServ(newsockfd);
+
+
     //welcomeServ(newsockfd);
+    sendFileServ(newsockfd);
     exit(0);
 
     for (;;) {
