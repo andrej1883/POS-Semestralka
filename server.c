@@ -9,14 +9,14 @@
 #include "serverHandler.h"
 #include "server.h"
 
-typedef struct{
+typedef struct {
     //struct user* fromUser;
     char fromUser[10];
     char text[10000];
-    int  newMsg;
+    int newMsg;
 } message;
 
-typedef struct{
+typedef struct {
     char fromUser[10];
     char toUser[10];
 } fRequest;
@@ -31,7 +31,7 @@ typedef struct {
     int numMsg;
     friend *members[50];
     message *messages[100];
-}groupChat;
+} groupChat;
 
 typedef struct {
     char username[10];
@@ -62,7 +62,7 @@ int numberUsers = 0;
 int fileIdS = 0;
 int filesCount = 0;
 
-void trimNL(char* arr, int length) {
+void trimNL(char *arr, int length) {
     for (int i = 0; i < length; ++i) {
         if (arr[i] == '\n') {
             arr[i] = '\0';
@@ -71,52 +71,52 @@ void trimNL(char* arr, int length) {
     }
 }
 
-void addFriend(int newsockfd, char* username) {
+void addFriend(int newsockfd, char *username) {
     /* vypise vsetkych pouzivatelov
      * user zvoli ktoreho si chce pridat
      * tomu sa posle request
      * */
 
 
-    user * client = (user*) malloc(sizeof (user));
+    user *client = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) == 0) {
             client = users[i];
         }
     }
     char buffer[256];
-    bzero(buffer,256);
+    bzero(buffer, 256);
     strcpy(buffer, "Here is list of all users: \n");
     for (int i = 0; i < numberUsers; ++i) {
         int val = i;
         char sid[3];
-        sprintf(sid,"%i",val);
+        sprintf(sid, "%i", val);
         strcat(buffer, sid);
         strcat(buffer, ". ");
         strcat(buffer, users[i]->username);
         strcat(buffer, "\n");
     }
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-    bzero(buffer,256); //vynulujem buffer
+    bzero(buffer, 256); //vynulujem buffer
     chScRErr(read(newsockfd, buffer, 256));
 
     int test;
     sscanf(buffer, "%d", &test);
-    if ((test >= 0) ) {
+    if ((test >= 0)) {
         sendRequest(username, users[test]->username);
 
     }
     //trimNL(buffer,sizeof (buffer));
     //strcpy(choise, buffer);
-    const char* msg = "Friend request sent!";
-    chScWErr(write(newsockfd, msg, strlen(msg)+1));
+    const char *msg = "Friend request sent!";
+    chScWErr(write(newsockfd, msg, strlen(msg) + 1));
     loggedMenuServ(newsockfd);
 
 }
 
-void sendRequest(char * fromUser, char* toUser) {
-    fRequest *newRequest = (fRequest *) malloc(sizeof (fRequest));
+void sendRequest(char *fromUser, char *toUser) {
+    fRequest *newRequest = (fRequest *) malloc(sizeof(fRequest));
     strcpy(newRequest->fromUser, fromUser);
     strcpy(newRequest->toUser, toUser);
     for (int i = 0; i < numberUsers; ++i) {
@@ -128,8 +128,8 @@ void sendRequest(char * fromUser, char* toUser) {
 
 }
 
-void updateFriendlist(char * usersName, char * friendsName) {
-    friend *newFriend = (friend *) malloc(sizeof (friend));
+void updateFriendlist(char *usersName, char *friendsName) {
+    friend *newFriend = (friend *) malloc(sizeof(friend));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, usersName) == 0) {
             strcpy(newFriend->fUsername, friendsName);
@@ -139,7 +139,7 @@ void updateFriendlist(char * usersName, char * friendsName) {
     }
 }
 
-void establishFriendship(char * friendOne, char * friendTwo) {
+void establishFriendship(char *friendOne, char *friendTwo) {
     updateFriendlist(friendOne, friendTwo);
     updateFriendlist(friendTwo, friendOne);
 }
@@ -151,52 +151,51 @@ void authServ(int newsockfd) {
     char psswd[10];
     int userFound = 0;
 
-    bzero(buffer,10); //vynulujem buffer
+    bzero(buffer, 10); //vynulujem buffer
     chScRErr(read(newsockfd, buffer, 10));
-    trimNL(buffer,sizeof (buffer));
-    strcpy(name,buffer);
+    trimNL(buffer, sizeof(buffer));
+    strcpy(name, buffer);
 
-    bzero(buffer,10); //vynulujem buffer
+    bzero(buffer, 10); //vynulujem buffer
     chScRErr(read(newsockfd, buffer, 10));
-    trimNL(buffer,sizeof (buffer));
-    strcpy(psswd,buffer);
+    trimNL(buffer, sizeof(buffer));
+    strcpy(psswd, buffer);
 
     for (int i = 0; i < numberUsers; ++i) {
-        if((strcmp(users[i]->username,name) == 0) && (strcmp(users[i]->passwd,psswd) == 0)) {
+        if ((strcmp(users[i]->username, name) == 0) && (strcmp(users[i]->passwd, psswd) == 0)) {
             users[i]->online = 1;
             userFound = 1;
             break;
         }
     }
-    if(userFound == 0) {
-        const char* msg = "Login or password incorrect!";
-        chScWErr(write(newsockfd, msg, strlen(msg)+1));
+    if (userFound == 0) {
+        const char *msg = "Login or password incorrect!";
+        chScWErr(write(newsockfd, msg, strlen(msg) + 1));
         welcomeServ(newsockfd);
     }
 
     if (userFound == 1) {
-        const char* msg = "User sucesfully logged in";
-        chScWErr(write(newsockfd, msg, strlen(msg)+1));
+        const char *msg = "User sucesfully logged in";
+        chScWErr(write(newsockfd, msg, strlen(msg) + 1));
         loggedMenuServ(newsockfd);
     }
 }
 
 void updateAccountsLoad() {
-    FILE *filePointer ;
+    FILE *filePointer;
     char line[50];
 
-    if( access( "users.txt", F_OK ) == 0 ) {
-        filePointer = fopen("users.txt", "r") ;
-        while( fgets ( line, 50, filePointer ) != NULL )
-        {
+    if (access("users.txt", F_OK) == 0) {
+        filePointer = fopen("users.txt", "r");
+        while (fgets(line, 50, filePointer) != NULL) {
             char name[10], psswd[10];
             sscanf(line, "%s %s", name, psswd);
-            trimNL(name,sizeof(name));
-            trimNL(psswd,sizeof(psswd));
-            if(numberUsers < 10) {
-                user *new = (user *) malloc(sizeof (user));
+            trimNL(name, sizeof(name));
+            trimNL(psswd, sizeof(psswd));
+            if (numberUsers < 10) {
+                user *new = (user *) malloc(sizeof(user));
                 strcpy(new->username, name);
-                strcpy(new->passwd,psswd);
+                strcpy(new->passwd, psswd);
                 users[numberUsers] = new;
                 numberUsers++;
             }
@@ -315,16 +314,16 @@ void addMessage(char *toUserName, char *text, char *fromUserName) {
         }
     }
 
-    user * fromUser = (user*) malloc(sizeof (user));
+    user *fromUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, fromUserName) == 0){
+        if (strcmp(users[i]->username, fromUserName) == 0) {
             fromUser = users[i];
         }
     }
 
-    message *newMessage = (message *) malloc(sizeof (message));
+    message *newMessage = (message *) malloc(sizeof(message));
     newMessage->newMsg = 1;
-    strcpy(newMessage->text,text);
+    strcpy(newMessage->text, text);
     strcpy(newMessage->fromUser, fromUser->username);
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, toUser->username) == 0) {
@@ -337,38 +336,38 @@ void addMessage(char *toUserName, char *text, char *fromUserName) {
 
 }
 
-void getMessages(int newsockfd, char* msgOfUser) {
+void getMessages(int newsockfd, char *msgOfUser) {
     char buffer[256];
-    user *newUser = (user*) malloc(sizeof (user));
+    user *newUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, msgOfUser) == 0){
+        if (strcmp(users[i]->username, msgOfUser) == 0) {
             newUser = users[i];
         }
     }
     printf("Here are messages for you: \n");
-    bzero(buffer,256);
+    bzero(buffer, 256);
     strcpy(buffer, "Here are messages for you: \n");
     //chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
     for (int i = 0; i < newUser->numMsg; ++i) {
         strcat(buffer, newUser->messages[i]->text);
     }
     printf("%s\n", buffer);
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     msgMenuServ(newsockfd, msgOfUser);
 }
 
-void getMessagesFrom(int newsockfd, char* msgOfUser, char* msgFromUser) {
+void getMessagesFrom(int newsockfd, char *msgOfUser, char *msgFromUser) {
     char buffer[256];
-    user *newUser = (user*) malloc(sizeof (user));
+    user *newUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, msgOfUser) == 0){
+        if (strcmp(users[i]->username, msgOfUser) == 0) {
             newUser = users[i];
         }
     }
-    user *senderUser = (user*) malloc(sizeof (user));
+    user *senderUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, msgFromUser) == 0){
+        if (strcmp(users[i]->username, msgFromUser) == 0) {
             senderUser = users[i];
         }
     }
@@ -376,13 +375,13 @@ void getMessagesFrom(int newsockfd, char* msgOfUser, char* msgFromUser) {
     message *usersMessages[newUser->numMsg];
     for (int i = 0; i < newUser->numMsg; ++i) {
         if (strcmp(newUser->messages[i]->fromUser, senderUser->username) == 0) {
-            usersMessages[numOfMsgFromUser]= newUser->messages[i];
+            usersMessages[numOfMsgFromUser] = newUser->messages[i];
             numOfMsgFromUser++;
         }
     }
 
-    bzero(buffer,256);
-    strcpy(buffer, "Here are messages for you from chosen user" );
+    bzero(buffer, 256);
+    strcpy(buffer, "Here are messages for you from chosen user");
     strcat(buffer, senderUser->username);
     strcat(buffer, ": \n");
     printf("Here are messages for you from %s: \n", buffer);
@@ -392,48 +391,48 @@ void getMessagesFrom(int newsockfd, char* msgOfUser, char* msgFromUser) {
         strcat(buffer, usersMessages[i]->text);
     }
     printf("%s\n", buffer);
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 }
 
 void registerUser(int newsockfd) {
-    user *new = (user *) malloc(sizeof (user));
+    user *new = (user *) malloc(sizeof(user));
     char buffer[10];
 
-    bzero(buffer,10); //vynulujem buffer
+    bzero(buffer, 10); //vynulujem buffer
     chScRErr(read(newsockfd, buffer, 10));
-    trimNL(buffer,sizeof (buffer));
+    trimNL(buffer, sizeof(buffer));
     strcpy(new->username, buffer);
 
-    bzero(buffer,10); //vynulujem buffer
+    bzero(buffer, 10); //vynulujem buffer
     chScRErr(read(newsockfd, buffer, 10));
-    trimNL(buffer,sizeof (buffer));
-    strcpy(new->passwd,buffer);
+    trimNL(buffer, sizeof(buffer));
+    strcpy(new->passwd, buffer);
 
     for (int i = 0; i < 10; ++i) {
-        if(!users[i]) {
+        if (!users[i]) {
             users[i] = new;
             numberUsers++;
             updateAccountsSave();
             break;
         }
     }
-    printf("New user: %s\n",new->username);
+    printf("New user: %s\n", new->username);
     printf("Current users: \n");
     for (int i = 0; i < numberUsers; ++i) {
-        printf("%s\n",users[i]->username);
+        printf("%s\n", users[i]->username);
     }
-    const char* msg = "User sucesfully registered";
-    chScWErr(write(newsockfd, msg, strlen(msg)+1));
+    const char *msg = "User sucesfully registered";
+    chScWErr(write(newsockfd, msg, strlen(msg) + 1));
     loggedMenuServ(newsockfd);
 }
 
-void deleteUser(char* name) {
+void deleteUser(char *name) {
     for (int i = 0; i < numberUsers; ++i) {
-        if(strcmp(users[i]->username,name) == 0) {
-            printf("User %s deleted\n",users[i]->username);
+        if (strcmp(users[i]->username, name) == 0) {
+            printf("User %s deleted\n", users[i]->username);
             users[i] = NULL;
             for (int j = i; j < numberUsers - 1; ++j) {
-                users[j] = users[j+1];
+                users[j] = users[j + 1];
             }
             numberUsers--;
             updateAccountsSave();
@@ -446,6 +445,7 @@ void sendFileServ(int newsockfd) {
     //TODO 1 : Send from server to specific user
     char current[10];
     char buffer[256];
+    char loaded[10];
 
     //receive name of current user from client
     bzero(current, 10);
@@ -457,6 +457,7 @@ void sendFileServ(int newsockfd) {
 
     int found = 0;
     for (int i = 0; i < filesCount; ++i) {
+        strcpy(loaded, fileList[i]->toUser);
         if (strcmp(fileList[i]->toUser, current) == 0) {
             fileInfo *foundInfo = (fileInfo *) malloc(sizeof(fileInfo));
             strcpy(foundInfo->toUser, fileList[i]->toUser);
@@ -466,6 +467,7 @@ void sendFileServ(int newsockfd) {
             for (int j = 0; j < 9999; ++j) {
                 if (!temporary[j]) {
                     temporary[j] = foundInfo;
+                    break;
                 }
             }
             found++;
@@ -483,46 +485,47 @@ void sendFileServ(int newsockfd) {
             strcat(buffer, " From: ");
             strcat(buffer, temporary[i]->fromUser);
             strcat(buffer, "\n");
-            chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
-
-            bzero(buffer, 256); //vynulujem buffer
-            chScRErr(read(newsockfd, buffer, 256));
-
-            int chosenReq;
-            sscanf(buffer, "%d", &chosenReq);
-
-            char file[100] = "files/";
-            char type[5] = ".fl";
-            char sId[10];
-
-
-            sprintf(sId, "%i", temporary[chosenReq]->fileIDI);
-            strcat(file, sId);
-            strcat(file, type);
-
-            FILE *filePointer;
-            char data[1024] = {0};
-            trimNL(file, sizeof(file));
-            if (access(file, F_OK) == 0) {
-                bzero(buffer, sizeof(buffer));
-                strcpy(buffer, temporary[chosenReq]->fileName);
-                chScWErr(write(newsockfd, buffer, strlen(buffer)));
-                filePointer = fopen(file, "r");
-                while (fgets(data, 1024, filePointer) != NULL) {
-                    chSFErr(send(newsockfd, data, sizeof(data), 0));
-                }
-                bzero(data, 1024);
-                fclose(filePointer);
-            } else {
-                printf("File not found!\n");
-            }
         }
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+        int chosenReq;
+        sscanf(buffer, "%d", &chosenReq);
+
+        char file[100] = "files/";
+        char type[5] = ".fl";
+        char sId[10];
+
+
+        sprintf(sId, "%i", temporary[chosenReq]->fileIDI);
+        strcat(file, sId);
+        strcat(file, type);
+
+        FILE *filePointer;
+        char data[1024] = {0};
+        trimNL(file, sizeof(file));
+        if (access(file, F_OK) == 0) {
+            bzero(buffer, sizeof(buffer));
+            strcpy(buffer, temporary[chosenReq]->fileName);
+            chScWErr(write(newsockfd, buffer, strlen(buffer)));
+            filePointer = fopen(file, "r");
+            while (fgets(data, 1024, filePointer) != NULL) {
+                chSFErr(send(newsockfd, data, sizeof(data), 0));
+            }
+            bzero(data, 1024);
+            fclose(filePointer);
+        } else {
+            printf("File not found!\n");
+        }
+
     } else {
         bzero(buffer, sizeof(buffer));
         strcpy(buffer, "There are no available files for you\n");
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
     }
-    loggedMenuServ(newsockfd);
+    // loggedMenuServ(newsockfd);
     /*//sending file list/no files message
     chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
     //user option(which file)
@@ -596,9 +599,9 @@ void rcvFileServ(int newsockfd) {
         mkdir(directory, 0700);
     }
 
-    sprintf(sId,"%i",fileIdS);
-    strcat(directory,sId);
-    strcat(directory,type);
+    sprintf(sId, "%i", fileIdS);
+    strcat(directory, sId);
+    strcat(directory, type);
 
     filesCount++;
     getFileInfoServ(newsockfd);
@@ -606,7 +609,7 @@ void rcvFileServ(int newsockfd) {
     filepointer = fopen(directory, "w");
     while (1) {
         n = recv(newsockfd, buffer, 1024, 0);
-        if (n <= 0){
+        if (n <= 0) {
             break;
         }
         fprintf(filepointer, "%s", buffer);
@@ -614,32 +617,33 @@ void rcvFileServ(int newsockfd) {
     }
 }
 
-int server(int argc, char *argv[])
-{
+int server(int argc, char *argv[]) {
     int sockfd, newsockfd;
     socklen_t cli_len;
     struct sockaddr_in serv_addr, cli_addr;
     char buffer[256];
 
-    if (argc < 2)
-    {
-        fprintf(stderr,"usage %s port\n", argv[0]);
+    if (argc < 2) {
+        fprintf(stderr, "usage %s port\n", argv[0]);
         return 1;
     }
 
-    bzero((char*)&serv_addr, sizeof(serv_addr)); //vynuluje strukuturu servaddr
+    bzero((char *) &serv_addr, sizeof(serv_addr)); //vynuluje strukuturu servaddr
     serv_addr.sin_family = AF_INET; // cely internet
     serv_addr.sin_addr.s_addr = INADDR_ANY; // povolene ip adresy - teraz vsetky
     serv_addr.sin_port = htons(atoi(argv[1])); //nastavi port litle to big endian
 
     chScCRErr(sockfd = socket(AF_INET, SOCK_STREAM, 0)); // vytvori socket
-    chScBDErr(bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr))); // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
+    chScBDErr(bind(sockfd, (struct sockaddr *) &serv_addr,
+                   sizeof(serv_addr))); // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
 
 
-    listen(sockfd, 5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
+    listen(sockfd,
+           5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
     cli_len = sizeof(cli_addr);
 
-    chScACErr(newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len)); //blokujuce systemove volanie, ked sa niekto pripoji, vrati novy socket na komunikaciu s pripojenym klientom
+    chScACErr(newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr,
+                                 &cli_len)); //blokujuce systemove volanie, ked sa niekto pripoji, vrati novy socket na komunikaciu s pripojenym klientom
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
@@ -653,24 +657,26 @@ int server(int argc, char *argv[])
 
     updateAccountsLoad();
     updateFileLogLoad();
-    welcomeServ(newsockfd);
+    sendFileServ(newsockfd);
+    //welcomeServ(newsockfd);
     exit(0);
 
     for (;;) {
-        bzero(buffer,256); //vynulujem buffer
-        chScRErr(read(newsockfd, buffer, 255)); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer,
+                      255)); //precitam data zo socketu a ulozim do buffra, je to blokujuce volanie, cakam dokedy klient nezada spravu
 
         //addMessage("Jarko", buffer, "Jarko");
         //addFriend("Jarko","Jarko");
         printf("Here is the message: %s\n", buffer);
         //getMessages(users[0]);
-        if(strcmp(buffer,"exit") == 0) {
+        if (strcmp(buffer, "exit") == 0) {
             break;
         }
-        const char* msg = "I got your message";
+        const char *msg = "I got your message";
         //getMessages(newsockfd, "Jarko");
         //getMessagesFrom(newsockfd, "Jarko", "Jarko");
-        chScWErr(write(newsockfd, msg, strlen(msg)+1));
+        chScWErr(write(newsockfd, msg, strlen(msg) + 1));
     }
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
@@ -693,34 +699,34 @@ void manageRequests(int newsockfd, char *username) {
      * */
 
     char buffer[256];
-    user *managingUser = (user*) malloc(sizeof (user));
+    user *managingUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, username) == 0){
+        if (strcmp(users[i]->username, username) == 0) {
             managingUser = users[i];
         }
     }
 
-    if (managingUser->numReq == 0){
-        bzero(buffer,256);
+    if (managingUser->numReq == 0) {
+        bzero(buffer, 256);
         strcpy(buffer, "No friend requests \n Press 0 to continue");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-        bzero(buffer,256); //vynulujem buffer
+        bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 256));
 
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "You should add friends in following menu  \n Press 0 to continue");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-        bzero(buffer,256); //vynulujem buffer
+        bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 256));
     } else {
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "Here is list of people who want to be your friends: \n");
         for (int i = 0; i < managingUser->numReq; ++i) {
             int val = i;
             char sid[3];
-            sprintf(sid,"%i",val);
+            sprintf(sid, "%i", val);
             strcat(buffer, sid);
             strcat(buffer, ". ");
             strcat(buffer, managingUser->requests[i]->fromUser);
@@ -728,44 +734,44 @@ void manageRequests(int newsockfd, char *username) {
         }
         strcat(buffer, "Please enter number of request: \n");
 
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-        bzero(buffer,256); //vynulujem buffer
+        bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 256));
 
         int chosenReq;
         sscanf(buffer, "%d", &chosenReq);
         if ((chosenReq >= 0) && (chosenReq < managingUser->numReq)) {
-            bzero(buffer,256);
+            bzero(buffer, 256);
             strcpy(buffer, "Do you wish to accept this request? \n(Y - Yes/N -NO ) \n");
-            chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+            chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-            bzero(buffer,256); //vynulujem buffer
+            bzero(buffer, 256); //vynulujem buffer
             chScRErr(read(newsockfd, buffer, 256));
             char choice = buffer[0];
             //strcpy(choise, buffer);
             //if ((strcmp(choise, 'Y') == 0) || (strcmp(choise, 'y') == 0)) {
-            if ((choice == 'Y') || (choice== 'y')) {
+            if ((choice == 'Y') || (choice == 'y')) {
                 establishFriendship(username, managingUser->requests[chosenReq]->fromUser);
                 managingUser->numReq--;
 
                 for (int i = 0; i < managingUser->numReq; ++i) {
-                    if (i>chosenReq) {
-                        fRequest *newRequest = (fRequest *) malloc(sizeof (fRequest));
-                        strcpy(newRequest->fromUser, managingUser->requests[i+1]->fromUser);
-                        strcpy(newRequest->toUser, managingUser->requests[i+1]->toUser);
+                    if (i > chosenReq) {
+                        fRequest *newRequest = (fRequest *) malloc(sizeof(fRequest));
+                        strcpy(newRequest->fromUser, managingUser->requests[i + 1]->fromUser);
+                        strcpy(newRequest->toUser, managingUser->requests[i + 1]->toUser);
                         managingUser->requests[i] = newRequest;
                     }
                 }
             } else {
-                if ((choice == 'N') || (choice== 'n')) {
+                if ((choice == 'N') || (choice == 'n')) {
                     managingUser->numReq--;
 
                     for (int i = 0; i < managingUser->numReq; ++i) {
-                        if (i>chosenReq) {
-                            fRequest *newRequest = (fRequest *) malloc(sizeof (fRequest));
-                            strcpy(newRequest->fromUser, managingUser->requests[i+1]->fromUser);
-                            strcpy(newRequest->toUser, managingUser->requests[i+1]->toUser);
+                        if (i > chosenReq) {
+                            fRequest *newRequest = (fRequest *) malloc(sizeof(fRequest));
+                            strcpy(newRequest->fromUser, managingUser->requests[i + 1]->fromUser);
+                            strcpy(newRequest->toUser, managingUser->requests[i + 1]->toUser);
                             managingUser->requests[i] = newRequest;
                         }
                     }
@@ -773,7 +779,7 @@ void manageRequests(int newsockfd, char *username) {
             }
         } else {
             strcpy(buffer, "Wrong value\n");
-            chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+            chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
         }
     }
 
@@ -786,36 +792,36 @@ void removeFriend(int newsockfd, char *username) {
      * toto priatelstvo sa zrusi
      * */
     char buffer[256];
-    user *managingUser = (user*) malloc(sizeof (user));
+    user *managingUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, username) == 0){
+        if (strcmp(users[i]->username, username) == 0) {
             managingUser = users[i];
         }
     }
 
-    if (managingUser->numFrd !=0) {
-        bzero(buffer,256);
+    if (managingUser->numFrd != 0) {
+        bzero(buffer, 256);
         strcpy(buffer, "Choose friend (by number) to be removed: \n");
 
         for (int i = 0; i < managingUser->numFrd; ++i) {
             int val = i;
             char sid[3];
-            sprintf(sid,"%i",val);
+            sprintf(sid, "%i", val);
             strcat(buffer, sid);
             strcat(buffer, ". ");
             strcat(buffer, managingUser->friendlist[i]->fUsername);
             strcat(buffer, "\n");
         }
 
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-        bzero(buffer,256); //vynulujem buffer
+        bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 256));
 
         int chosenFrd;
         sscanf(buffer, "%d", &chosenFrd);
 
-        user *removedFriend = (user*) malloc(sizeof (user));
+        user *removedFriend = (user *) malloc(sizeof(user));
         for (int i = 0; i < numberUsers; ++i) {
             if (strcmp(users[i]->username, managingUser->friendlist[chosenFrd]->fUsername) == 0) {
                 removedFriend = users[i];
@@ -824,9 +830,9 @@ void removeFriend(int newsockfd, char *username) {
 
         managingUser->numFrd--;
         for (int i = 0; i < managingUser->numFrd; ++i) {
-            if (i>chosenFrd) {
-                friend *newFriend = (friend *) malloc(sizeof (friend));
-                strcpy(newFriend->fUsername, managingUser->friendlist[i+1]->fUsername);
+            if (i > chosenFrd) {
+                friend *newFriend = (friend *) malloc(sizeof(friend));
+                strcpy(newFriend->fUsername, managingUser->friendlist[i + 1]->fUsername);
                 managingUser->friendlist[i] = newFriend;
             }
         }
@@ -841,27 +847,27 @@ void removeFriend(int newsockfd, char *username) {
         removedFriend->numFrd--;
 
         for (int i = 0; i < removedFriend->numFrd; ++i) {
-            if (i>selected) {
-                friend *newFriend = (friend *) malloc(sizeof (friend));
-                strcpy(newFriend->fUsername, removedFriend->friendlist[i+1]->fUsername);
+            if (i > selected) {
+                friend *newFriend = (friend *) malloc(sizeof(friend));
+                strcpy(newFriend->fUsername, removedFriend->friendlist[i + 1]->fUsername);
                 removedFriend->friendlist[i] = newFriend;
             }
         }
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "Friend removed!\n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     } else {
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "You have no friends :( \n Press 0 to continue");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-        bzero(buffer,256); //vynulujem buffer
+        bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 256));
 
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "You can add friends in following menu  \n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
     }
 
     loggedMenuServ(newsockfd);
@@ -874,21 +880,21 @@ void sendMessage(int newsockfd, char *username) {
      * ulozi spravu prislusnemu kontaktu
      */
     char buffer[256];
-    user *managingUser = (user*) malloc(sizeof (user));
+    user *managingUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, username) == 0){
+        if (strcmp(users[i]->username, username) == 0) {
             managingUser = users[i];
         }
     }
 
-    if (managingUser->numFrd !=0) {
+    if (managingUser->numFrd != 0) {
         bzero(buffer, 256);
         strcpy(buffer, "Choose friend: \n");
 
         for (int i = 0; i < managingUser->numFrd; ++i) {
             int val = i;
             char sid[3];
-            sprintf(sid,"%i",val);
+            sprintf(sid, "%i", val);
             strcat(buffer, sid);
             strcat(buffer, ". ");
             strcat(buffer, managingUser->friendlist[i]->fUsername);
@@ -903,7 +909,7 @@ void sendMessage(int newsockfd, char *username) {
         int chosenFrd;
         sscanf(buffer, "%d", &chosenFrd);
 
-        user *textedFriend = (user*) malloc(sizeof (user));
+        user *textedFriend = (user *) malloc(sizeof(user));
         for (int i = 0; i < numberUsers; ++i) {
             if (strcmp(users[i]->username, managingUser->friendlist[chosenFrd]->fUsername) == 0) {
                 textedFriend = users[i];
@@ -918,21 +924,21 @@ void sendMessage(int newsockfd, char *username) {
         chScRErr(read(newsockfd, buffer, 256));
         addMessage(textedFriend->username, buffer, managingUser->username);
 
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "Message sent! \n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-    }else {
-        bzero(buffer,256);
+    } else {
+        bzero(buffer, 256);
         strcpy(buffer, "You have no friends :( \n Press 0 to continue");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-        bzero(buffer,256); //vynulujem buffer
+        bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 256));
 
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "You can add friends in following menu  \n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     }
     loggedMenuServ(newsockfd);
@@ -940,21 +946,21 @@ void sendMessage(int newsockfd, char *username) {
 
 void readMessages(int newsockfd, char *username) {
     char buffer[256];
-    user *managingUser = (user*) malloc(sizeof (user));
+    user *managingUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, username) == 0){
+        if (strcmp(users[i]->username, username) == 0) {
             managingUser = users[i];
         }
     }
 
-    if (managingUser->numFrd !=0) {
+    if (managingUser->numFrd != 0) {
         bzero(buffer, 256);
         strcpy(buffer, "Choose friend: \n");
 
         for (int i = 0; i < managingUser->numFrd; ++i) {
             int val = i;
             char sid[3];
-            sprintf(sid,"%i",val);
+            sprintf(sid, "%i", val);
             strcat(buffer, sid);
             strcat(buffer, ". ");
             strcat(buffer, managingUser->friendlist[i]->fUsername);
@@ -969,7 +975,7 @@ void readMessages(int newsockfd, char *username) {
         int chosenFrd;
         sscanf(buffer, "%d", &chosenFrd);
 
-        user *textedFriend = (user*) malloc(sizeof (user));
+        user *textedFriend = (user *) malloc(sizeof(user));
         for (int i = 0; i < numberUsers; ++i) {
             if (strcmp(users[i]->username, managingUser->friendlist[chosenFrd]->fUsername) == 0) {
                 textedFriend = users[i];
@@ -979,17 +985,17 @@ void readMessages(int newsockfd, char *username) {
         getMessagesFrom(newsockfd, managingUser->username, textedFriend->username);
 
 
-    }else {
-        bzero(buffer,256);
+    } else {
+        bzero(buffer, 256);
         strcpy(buffer, "You have no friends so no messages :( \n Press 0 to continue");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-        bzero(buffer,256); //vynulujem buffer
+        bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 256));
 
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "You can add friends in following menu  \n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
     }
 
     loggedMenuServ(newsockfd);
@@ -998,35 +1004,35 @@ void readMessages(int newsockfd, char *username) {
 
 void createGroup(int newsockfd, char *founderName) {
     char buffer[256];
-    bzero(buffer,256);
+    bzero(buffer, 256);
     strcpy(buffer, "Choose a name for new chat \n");
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-    bzero(buffer,256); //vynulujem buffer
+    bzero(buffer, 256); //vynulujem buffer
     chScRErr(read(newsockfd, buffer, 256));
 
-    groupChat *newGroup = (groupChat *) malloc(sizeof (groupChat));
+    groupChat *newGroup = (groupChat *) malloc(sizeof(groupChat));
     strcpy(newGroup->chatName, buffer);
-    friend *newMember = (friend *) malloc(sizeof (friend));
-    strcpy(newMember->fUsername,founderName);
+    friend *newMember = (friend *) malloc(sizeof(friend));
+    strcpy(newMember->fUsername, founderName);
     newGroup->members[0] = newMember;
     newGroup->numMemb = 1;
     newGroup->numMsg = 0;
     groupChats[numberChats] = newGroup;
     numberChats++;
 
-    user *founder = (user*) malloc(sizeof (user));
+    user *founder = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, founderName) == 0){
+        if (strcmp(users[i]->username, founderName) == 0) {
             founder = users[i];
         }
     }
-    founder->groupChats[founder->numGroups]=newGroup;
+    founder->groupChats[founder->numGroups] = newGroup;
     founder->numGroups++;
 
-    bzero(buffer,256);
+    bzero(buffer, 256);
     strcpy(buffer, "Chat created! \n");
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     loggedMenuServ(newsockfd);
 
@@ -1034,72 +1040,72 @@ void createGroup(int newsockfd, char *founderName) {
 
 void addMember(int newsockfd, char *membersName) {
 
-    user * managingUser = (user*) malloc(sizeof (user));
+    user *managingUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, membersName) == 0){
+        if (strcmp(users[i]->username, membersName) == 0) {
             managingUser = users[i];
         }
     }
 
-    groupChat *group = (groupChat *) malloc(sizeof (groupChat));
+    groupChat *group = (groupChat *) malloc(sizeof(groupChat));
     char buffer[256];
-    bzero(buffer,256);
+    bzero(buffer, 256);
     strcpy(buffer, "Here is list of all group chats: \n");
     for (int i = 0; i < managingUser->numGroups; ++i) {
         int val = i;
         char sid[3];
-        sprintf(sid,"%i",val);
+        sprintf(sid, "%i", val);
         strcat(buffer, sid);
         strcat(buffer, ". ");
         strcat(buffer, managingUser->groupChats[i]->chatName);
         strcat(buffer, "\n");
     }
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-    bzero(buffer,256); //vynulujem buffer
+    bzero(buffer, 256); //vynulujem buffer
     chScRErr(read(newsockfd, buffer, 256));
 
     int test;
     sscanf(buffer, "%d", &test);
-    if ((test >= 0) ) {
+    if ((test >= 0)) {
         group = managingUser->groupChats[test];
 
     }
 
-    bzero(buffer,256);
+    bzero(buffer, 256);
     strcpy(buffer, "Here is list of all users: \n");
     for (int i = 0; i < numberUsers; ++i) {
         int val = i;
         char sid[3];
-        sprintf(sid,"%i",val);
+        sprintf(sid, "%i", val);
         strcat(buffer, sid);
         strcat(buffer, ". ");
         strcat(buffer, users[i]->username);
         strcat(buffer, "\n");
     }
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-    bzero(buffer,256); //vynulujem buffer
+    bzero(buffer, 256); //vynulujem buffer
     chScRErr(read(newsockfd, buffer, 256));
 
     int test2;
     sscanf(buffer, "%d", &test2);
-    friend *newMember = (friend *) malloc(sizeof (friend));
-    if ((test2 >= 0) ) {
-        strcpy(newMember->fUsername,users[test2]->username);
+    friend *newMember = (friend *) malloc(sizeof(friend));
+    if ((test2 >= 0)) {
+        strcpy(newMember->fUsername, users[test2]->username);
         group->members[group->numMemb] = newMember;
         group->numMemb++;
 
-        user * newMemberU = (user*) malloc(sizeof (user));
+        user *newMemberU = (user *) malloc(sizeof(user));
         newMemberU = users[test2];
 
         newMemberU->groupChats[newMemberU->numGroups] = group;
         newMemberU->numGroups++;
     }
 
-    bzero(buffer,256);
+    bzero(buffer, 256);
     strcpy(buffer, "User added to chat! \n");
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     loggedMenuServ(newsockfd);
 
@@ -1107,34 +1113,34 @@ void addMember(int newsockfd, char *membersName) {
 
 void removeMember(int newsockfd, char *membersName) {
 
-    user * managingUser = (user*) malloc(sizeof (user));
+    user *managingUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, membersName) == 0){
+        if (strcmp(users[i]->username, membersName) == 0) {
             managingUser = users[i];
         }
     }
 
-    groupChat *group = (groupChat *) malloc(sizeof (groupChat));
+    groupChat *group = (groupChat *) malloc(sizeof(groupChat));
     char buffer[256];
-    bzero(buffer,256);
+    bzero(buffer, 256);
     strcpy(buffer, "Choose chat you want to leave: \n");
     for (int i = 0; i < managingUser->numGroups; ++i) {
         int val = i;
         char sid[3];
-        sprintf(sid,"%i",val);
+        sprintf(sid, "%i", val);
         strcat(buffer, sid);
         strcat(buffer, ". ");
         strcat(buffer, managingUser->groupChats[i]->chatName);
         strcat(buffer, "\n");
     }
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-    bzero(buffer,256); //vynulujem buffer
+    bzero(buffer, 256); //vynulujem buffer
     chScRErr(read(newsockfd, buffer, 256));
 
     int test;
     sscanf(buffer, "%d", &test);
-    if ((test >= 0) ) {
+    if ((test >= 0)) {
         group = managingUser->groupChats[test];
 
     }
@@ -1149,7 +1155,7 @@ void removeMember(int newsockfd, char *membersName) {
 
     for (int i = 0; i < group->numMemb; ++i) {
         if (i >= chosen) {
-            strcpy(group->members[i]->fUsername , group->members[i+1]->fUsername );
+            strcpy(group->members[i]->fUsername, group->members[i + 1]->fUsername);
         }
     }
 
@@ -1164,7 +1170,7 @@ void removeMember(int newsockfd, char *membersName) {
     //groupChat *helperGroup = (groupChat *) malloc(sizeof (groupChat));
     for (int i = 0; i < managingUser->numGroups; ++i) {
         if (i >= chosengr) {
-            managingUser->groupChats[i] = managingUser->groupChats[i+1];
+            managingUser->groupChats[i] = managingUser->groupChats[i + 1];
         }
     }
     loggedMenuServ(newsockfd);
@@ -1172,23 +1178,23 @@ void removeMember(int newsockfd, char *membersName) {
 }
 
 void addGroupMessage(char *toGroupeName, char *text, char *fromUserName) {
-    groupChat * toGroup = (groupChat*) malloc(sizeof (groupChat));
+    groupChat *toGroup = (groupChat *) malloc(sizeof(groupChat));
     for (int i = 0; i < numberChats; ++i) {
-        if (strcmp(groupChats[i]->chatName, toGroupeName) == 0){
+        if (strcmp(groupChats[i]->chatName, toGroupeName) == 0) {
             toGroup = groupChats[i];
         }
     }
 
-    user * fromUser = (user*) malloc(sizeof (user));
+    user *fromUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, fromUserName) == 0){
+        if (strcmp(users[i]->username, fromUserName) == 0) {
             fromUser = users[i];
         }
     }
 
-    message *newMessage = (message *) malloc(sizeof (message));
+    message *newMessage = (message *) malloc(sizeof(message));
     newMessage->newMsg = 1;
-    strcpy(newMessage->text,text);
+    strcpy(newMessage->text, text);
     strcpy(newMessage->fromUser, fromUser->username);
 
     toGroup->messages[toGroup->numMsg] = newMessage;
@@ -1199,21 +1205,21 @@ void addGroupMessage(char *toGroupeName, char *text, char *fromUserName) {
 
 void sendGroupMessage(int newsockfd, char *userName) {
     char buffer[256];
-    user *managingUser = (user*) malloc(sizeof (user));
+    user *managingUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, userName) == 0){
+        if (strcmp(users[i]->username, userName) == 0) {
             managingUser = users[i];
         }
     }
 
-    if (managingUser->numGroups !=0) {
+    if (managingUser->numGroups != 0) {
         bzero(buffer, 256);
         strcpy(buffer, "Choose Groupchat: \n");
 
         for (int i = 0; i < managingUser->numGroups; ++i) {
             int val = i;
             char sid[3];
-            sprintf(sid,"%i",val);
+            sprintf(sid, "%i", val);
             strcat(buffer, sid);
             strcat(buffer, ". ");
             strcat(buffer, managingUser->groupChats[i]->chatName);
@@ -1228,7 +1234,7 @@ void sendGroupMessage(int newsockfd, char *userName) {
         int chosenFrd;
         sscanf(buffer, "%d", &chosenFrd);
 
-        groupChat *textedGroup = (groupChat*) malloc(sizeof (groupChat));
+        groupChat *textedGroup = (groupChat *) malloc(sizeof(groupChat));
         for (int i = 0; i < numberChats; ++i) {
             if (strcmp(groupChats[i]->chatName, managingUser->groupChats[chosenFrd]->chatName) == 0) {
                 textedGroup = groupChats[i];
@@ -1242,21 +1248,21 @@ void sendGroupMessage(int newsockfd, char *userName) {
         chScRErr(read(newsockfd, buffer, 256));
         addGroupMessage(textedGroup->chatName, buffer, managingUser->username);
 
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "Message sent! \n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-    }else {
-        bzero(buffer,256);
+    } else {
+        bzero(buffer, 256);
         strcpy(buffer, "You aren't a member of any groupchats \n Press 0 to continue");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-        bzero(buffer,256); //vynulujem buffer
+        bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 256));
 
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "You can create a groupchat in following menu  \n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     }
     loggedMenuServ(newsockfd);
@@ -1264,21 +1270,21 @@ void sendGroupMessage(int newsockfd, char *userName) {
 
 void getGroupMessages(int newsockfd, char *username) {
     char buffer[256];
-    user *managingUser = (user*) malloc(sizeof (user));
+    user *managingUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
-        if (strcmp(users[i]->username, username) == 0){
+        if (strcmp(users[i]->username, username) == 0) {
             managingUser = users[i];
         }
     }
 
-    if (managingUser->numGroups !=0) {
+    if (managingUser->numGroups != 0) {
         bzero(buffer, 256);
         strcpy(buffer, "Choose Chat: \n");
 
         for (int i = 0; i < managingUser->numGroups; ++i) {
             int val = i;
             char sid[3];
-            sprintf(sid,"%i",val);
+            sprintf(sid, "%i", val);
             strcat(buffer, sid);
             strcat(buffer, ". ");
             strcat(buffer, managingUser->groupChats[i]->chatName);
@@ -1293,7 +1299,7 @@ void getGroupMessages(int newsockfd, char *username) {
         int chosenFrd;
         sscanf(buffer, "%d", &chosenFrd);
 
-        groupChat *textedGroup = (groupChat*) malloc(sizeof (groupChat));
+        groupChat *textedGroup = (groupChat *) malloc(sizeof(groupChat));
         for (int i = 0; i < numberChats; ++i) {
             if (strcmp(groupChats[i]->chatName, managingUser->groupChats[chosenFrd]->chatName) == 0) {
                 textedGroup = groupChats[i];
@@ -1310,18 +1316,17 @@ void getGroupMessages(int newsockfd, char *username) {
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
 
-
-    }else {
-        bzero(buffer,256);
+    } else {
+        bzero(buffer, 256);
         strcpy(buffer, "You aren't a member of any groupchats \n Press 0 to continue");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-        bzero(buffer,256); //vynulujem buffer
+        bzero(buffer, 256); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 256));
 
-        bzero(buffer,256);
+        bzero(buffer, 256);
         strcpy(buffer, "You can create a groupchat in following menu  \n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     }
     loggedMenuServ(newsockfd);

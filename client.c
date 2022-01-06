@@ -159,7 +159,7 @@ void rcvFileCli(int sockfd) {
     char buffer[256];
     char filename[256];
     char fileBuffer[1024];
-
+    strcpy(myName, "Pepa");
     bzero(buffer, sizeof(buffer));
     strcpy(buffer, myName);
     chScWErr(write(sockfd, buffer, sizeof(buffer)));
@@ -184,12 +184,22 @@ void rcvFileCli(int sockfd) {
         FILE *filepointer;
         char directory[100] = "downloadedFiles/";
 
+
         struct stat st = {0};
         if (stat(directory, &st) == -1) {
             mkdir(directory, 0700);
+
+            strcat(directory, myName);
+            strcat(directory, "/");
+
+            if (stat(directory, &st) == -1) {
+                mkdir(directory, 0700);
+            }
         }
 
         strcat(directory, filename);
+
+        bzero(fileBuffer, sizeof(fileBuffer));
 
         filepointer = fopen(directory, "w");
         while (1) {
@@ -201,7 +211,6 @@ void rcvFileCli(int sockfd) {
             bzero(fileBuffer, 1024);
         }
     }
-    loggedMenuCli(sockfd, myName);
 }
 
 int client(int argc, char *argv[])
@@ -247,13 +256,14 @@ int client(int argc, char *argv[])
     //sendFileClie("file.txt", sockfd,"Pepa");
     //sendFileInfoCLie(sockfd,"file.txt","Pepas");
 
-    welcomeCli(sockfd);
+    // welcomeCli(sockfd);
+    rcvFileCli(sockfd);
     exit(0);
-    for(;;) {
+    for (;;) {
         printf("Please enter a message: ");
         bzero(buffer, 256); //vynulujem buffer
         fgets(buffer, 255, stdin); //naplnim buffer
-        if(strcmp(buffer,"exit") == 0) {
+        if (strcmp(buffer, "exit") == 0) {
             break;
         }
         chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
