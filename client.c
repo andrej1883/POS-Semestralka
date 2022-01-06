@@ -16,31 +16,48 @@
 char myName[10];
 
 void authClie(int sockfd) {
-    char buffer[256];
+    char buffer[255];
+    int n;
 
     printf("Log into server: \n");
     printf("Please enter username: ");
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, 10); //vynulujem buffer
+    fgets(buffer, 10, stdin); //naplnim buffer
+    //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    n = send(sockfd,buffer,10,MSG_EOR);
+    if(n < 0){
+        perror("Send option Error:");
+    }
+    trimNL(buffer,sizeof(buffer));
     for (int i = 0; i < 10; ++i) {
         myName[i] = buffer[i];
     }
 
     printf("Please enter password: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, 10); //vynulujem buffer
+    fgets(buffer, 10, stdin); //naplnim buffer
+    //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    n = send(sockfd,buffer,10,MSG_EOR);
+    if(n < 0){
+        perror("Send option Error:");
+    }
 
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+
+    bzero(buffer, 255); //vynulujem buffer
+    //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    n = recv(sockfd,buffer,255,MSG_WAITALL);
+    if(n < 0){
+        perror("Receive option Error:");
+    }
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     if(strcmp(buffer,"Login or password incorrect!") == 0) {
         welcomeCli(sockfd);
-    } else {
+    }
+
+    if(strcmp(buffer,"User sucesfully logged in") == 0) {
         loggedMenuCli(sockfd,myName);
     }
 
@@ -94,31 +111,45 @@ void getMessagesFromClie(int sockfd) {
 }
 
 void registerClie(int sockfd) {
-    char buffer[256];
+    char buffer[255];
+    int n;
 
     printf("Create account: \n");
     printf("Please enter username: ");
 
-    bzero(buffer, 256); //vynulujem buffer
+    bzero(buffer, 255); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    n = send(sockfd,buffer,10,MSG_EOR);
+    if(n < 0){
+        perror("Send option Error:");
+    }
     for (int i = 0; i < 10; ++i) {
         myName[i] = buffer[i];
     }
 
     printf("Please enter password: ");
-    bzero(buffer, 256); //vynulujem buffer
+    bzero(buffer, 255); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    n = send(sockfd,buffer,10,MSG_EOR);
+    if(n < 0){
+        perror("Send option Error:");
+    }
 
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, 255); //vynulujem buffer
+    //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    n = recv(sockfd,buffer,255,MSG_WAITALL);
+    if(n < 0){
+        perror("Receive option Error:");
+    }
+
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    if(strcmp(buffer,"User sucesfully registered") == 0) {
-        loggedMenuCli(sockfd,myName);
-    }
+
+    loggedMenuCli(sockfd,myName);
+
 }
 
 void sendFileInfoCLie(int sockfd, char *filename, char *toUser) {
@@ -131,7 +162,8 @@ void sendFileInfoCLie(int sockfd, char *filename, char *toUser) {
     strcat(buffer,myName);
     strcat(buffer," ");
     strcat(buffer,toUser);
-    chScWErr(write(sockfd, buffer, sizeof (buffer)));
+    //chScWErr(write(sockfd, buffer, sizeof (buffer)));
+    send(sockfd,buffer,256,MSG_EOR);
     bzero(buffer,sizeof (buffer));
 }
 
@@ -154,16 +186,12 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
     }
 }
 
-char* getFilename(int sockfd) {
-
-}
-
 void rcvFileCli(int sockfd) {
-    //TODO 2: Get files from server
     //send your name  to server
     char buffer[256];
+    int n;
 
-    strcpy(myName, "Pepa");
+    //strcpy(myName, "Pepa");
     bzero(buffer, sizeof(buffer));
     strcpy(buffer, myName);
     //chScWErr(write(sockfd, buffer, sizeof(buffer)));
@@ -171,7 +199,11 @@ void rcvFileCli(int sockfd) {
 
 
     bzero(buffer, sizeof (buffer)); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, sizeof (buffer))); //precitam spravu zo servera
+    //chScRErr(read(sockfd, buffer, sizeof (buffer))); //precitam spravu zo servera
+    n = recv(sockfd, buffer, sizeof(buffer), MSG_WAITALL);
+    if(n < 0){
+        perror("Receive name Error:");
+    }
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     if (strcmp(buffer, "There are no available files for you\n") != 0) {
@@ -179,7 +211,8 @@ void rcvFileCli(int sockfd) {
         printf("Please enter number of file: ");
         bzero(buffer, sizeof (buffer)); //vynulujem buffer
         fgets(buffer, sizeof (buffer), stdin); //naplnim buffer
-        chScWErr(write(sockfd, buffer, sizeof (buffer)));
+        //chScWErr(write(sockfd, buffer, sizeof (buffer)));
+        send(sockfd,buffer,256,MSG_EOR);
 
         int n;
         FILE *filepointer;
@@ -275,8 +308,8 @@ int client(int argc, char *argv[])
 
 
 
-    //welcomeCli(sockfd);
-    rcvFileCli(sockfd);
+    welcomeCli(sockfd);
+    //rcvFileCli(sockfd);
     exit(0);
 
     for (;;) {

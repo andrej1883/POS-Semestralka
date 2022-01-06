@@ -147,18 +147,27 @@ void establishFriendship(char *friendOne, char *friendTwo) {
 
 void authServ(int newsockfd) {
 
-    char buffer[10];
+    char buffer[255];
     char name[10];
     char psswd[10];
     int userFound = 0;
+    int n;
 
-    bzero(buffer, 10); //vynulujem buffer
-    chScRErr(read(newsockfd, buffer, 10));
+    bzero(buffer, 255); //vynulujem buffer
+    //chScRErr(read(newsockfd, buffer, 10));
+    n = recv(newsockfd,buffer,10,MSG_WAITALL);
+    if(n < 0){
+        perror("Receive option Error:");
+    }
     trimNL(buffer, sizeof(buffer));
     strcpy(name, buffer);
 
-    bzero(buffer, 10); //vynulujem buffer
-    chScRErr(read(newsockfd, buffer, 10));
+    bzero(buffer, 255); //vynulujem buffer
+    n = recv(newsockfd,buffer,10,MSG_WAITALL);
+    if(n < 0){
+        perror("Receive option Error:");
+    }
+    //chScRErr(read(newsockfd, buffer, 10));
     trimNL(buffer, sizeof(buffer));
     strcpy(psswd, buffer);
 
@@ -171,13 +180,21 @@ void authServ(int newsockfd) {
     }
     if (userFound == 0) {
         const char *msg = "Login or password incorrect!";
-        chScWErr(write(newsockfd, msg, strlen(msg) + 1));
+        //chScWErr(write(newsockfd, msg, strlen(msg) + 1));
+        n = send(newsockfd,msg,255,MSG_EOR);
+        if(n < 0){
+            perror("Send option Error:");
+        }
         welcomeServ(newsockfd);
     }
 
     if (userFound == 1) {
         const char *msg = "User sucesfully logged in";
-        chScWErr(write(newsockfd, msg, strlen(msg) + 1));
+        n = send(newsockfd,msg,255,MSG_EOR);
+        if(n < 0){
+            perror("Send option Error:");
+        }
+        //chScWErr(write(newsockfd, msg, strlen(msg) + 1));
         loggedMenuServ(newsockfd);
     }
 }
@@ -397,15 +414,26 @@ void getMessagesFrom(int newsockfd, char *msgOfUser, char *msgFromUser) {
 
 void registerUser(int newsockfd) {
     user *new = (user *) malloc(sizeof(user));
-    char buffer[10];
+    char buffer[255];
+    int n;
 
-    bzero(buffer, 10); //vynulujem buffer
-    chScRErr(read(newsockfd, buffer, 10));
+    bzero(buffer, 255); //vynulujem buffer
+    //chScRErr(read(newsockfd, buffer, 10));
+    n = recv(newsockfd,buffer,10,MSG_WAITALL);
+    if(n < 0){
+        perror("Receive option Error:");
+    }
+
     trimNL(buffer, sizeof(buffer));
     strcpy(new->username, buffer);
 
-    bzero(buffer, 10); //vynulujem buffer
-    chScRErr(read(newsockfd, buffer, 10));
+    bzero(buffer, 255); //vynulujem buffer
+    //chScRErr(read(newsockfd, buffer, 10));
+    n = recv(newsockfd,buffer,10,MSG_WAITALL);
+    if(n < 0){
+        perror("Receive option Error:");
+    }
+
     trimNL(buffer, sizeof(buffer));
     strcpy(new->passwd, buffer);
 
@@ -423,7 +451,12 @@ void registerUser(int newsockfd) {
         printf("%s\n", users[i]->username);
     }
     const char *msg = "User sucesfully registered";
-    chScWErr(write(newsockfd, msg, strlen(msg) + 1));
+    //chScWErr(write(newsockfd, msg, strlen(msg) + 1));
+    n = send(newsockfd,msg,255,MSG_EOR);
+    if(n < 0){
+        perror("Send option Error:");
+    }
+
     loggedMenuServ(newsockfd);
 }
 
@@ -443,7 +476,6 @@ void deleteUser(char *name) {
 }
 
 void sendFileServ(int newsockfd) {
-    //TODO 1 : Send from server to specific user
     char current[10];
     char buffer[256];
     char loaded[10];
@@ -459,6 +491,7 @@ void sendFileServ(int newsockfd) {
     if(n < 0){
         perror("Receive name Error:");
     }
+    trimNL(current, sizeof(current));
 
     //creating temporary fileList
     fileInfo *temporary[9999];
@@ -494,7 +527,8 @@ void sendFileServ(int newsockfd) {
             strcat(buffer, temporary[i]->fromUser);
             strcat(buffer, "\n");
         }
-        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        //chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        send(newsockfd,buffer,256,MSG_EOR);
 
         /*bzero(buffer, sizeof (buffer)); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, sizeof(buffer)));*/
@@ -541,57 +575,24 @@ void sendFileServ(int newsockfd) {
     } else {
         bzero(buffer, sizeof(buffer));
         strcpy(buffer, "There are no available files for you\n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        //chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        send(newsockfd,buffer,256,MSG_EOR);
     }
-    // loggedMenuServ(newsockfd);
-    /*//sending file list/no files message
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
-    //user option(which file)
-    bzero(buffer,256); //vynulujem buffer
-    chScRErr(read(newsockfd, buffer, 256));
-
-    int chosenReq;
-    sscanf(buffer, "%d", &chosenReq);
-
-    char file[100] = "files/";
-    char type[5] = ".fl";
-    char sId[10];
-
-
-    sprintf(sId,"%i",temporary[chosenReq]->fileIDI);
-    strcat(file,sId);
-    strcat(file,type);
-
-    FILE *filePointer;
-    char data[1024] = {0};
-    trimNL(file,sizeof (file));
-    if( access( file, F_OK ) == 0 ) {
-        bzero(buffer,sizeof (buffer));
-        strcpy(buffer,temporary[chosenReq]->fileName);
-        chScWErr(write(newsockfd,buffer, strlen(buffer)));
-        filePointer = fopen(file, "r") ;
-        while( fgets ( data, 1024, filePointer ) != NULL )
-        {
-            chSFErr(send(newsockfd,data,sizeof (data),0));
-        }
-        bzero(data, 1024);
-        fclose(filePointer);
-    } else {
-        printf("File not found!\n");
-    }*/
 }
 
 void getFileInfoServ(int newsockfd) {
     //funguje
     char buffer[256];
-    char filename[256];
-    char from[10];
-    char to[10];
+    int n;
 
     fileInfo *new = (fileInfo *) malloc(sizeof(fileInfo));
 
     bzero(buffer, 256);
-    chScRErr(read(newsockfd, buffer, 256));
+    //chScRErr(read(newsockfd, buffer, 256));
+    n = recv(newsockfd, buffer, 256, MSG_WAITALL);
+    if(n < 0){
+        perror("Receive name Error:");
+    }
     sscanf(buffer, "%s %s %s", new->fileName, new->fromUser, new->toUser);
     new->fileIDI = fileIdS;
     fileIdS++;
@@ -634,6 +635,8 @@ void rcvFileServ(int newsockfd) {
         bzero(buffer, 1024);
     }
 }
+
+
 
 int server(int argc, char *argv[]) {
     int sockfd, newsockfd;
@@ -687,8 +690,8 @@ int server(int argc, char *argv[]) {
 
 
 
-    //welcomeServ(newsockfd);
-    sendFileServ(newsockfd);
+    welcomeServ(newsockfd);
+    //sendFileServ(newsockfd);
     exit(0);
 
     for (;;) {
