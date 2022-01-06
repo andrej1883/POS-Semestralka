@@ -399,10 +399,10 @@ void getMessagesFrom(int newsockfd, char *msgOfUser, char *msgFromUser) {
     }
 
     bzero(buffer, 256);
-    strcpy(buffer, "Here are messages for you from chosen user");
+    strcpy(buffer, "Here are messages for you from ");
     strcat(buffer, senderUser->username);
     strcat(buffer, ": \n");
-    printf("Here are messages for you from %s: \n", buffer);
+    //printf("Here are messages for you from %s: \n", buffer);
 
     for (int i = 0; i < numOfMsgFromUser; ++i) {
 
@@ -934,6 +934,8 @@ void sendMessage(int newsockfd, char *username) {
             strcat(buffer, "\n");
         }
 
+        strcat(buffer, "\nPlease enter number of user you wish to message: \n");
+
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
         bzero(buffer, 256); //vynulujem buffer
@@ -964,6 +966,13 @@ void sendMessage(int newsockfd, char *username) {
     } else {
         bzero(buffer, 256);
         strcpy(buffer, "You have no friends :( \n Press 0 to continue");
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+        bzero(buffer, 256);
+        strcpy(buffer, "You can add friends in following menu  \n");
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
         bzero(buffer, 256); //vynulujem buffer
@@ -1031,7 +1040,7 @@ void readMessages(int newsockfd, char *username) {
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
     }
 
-    loggedMenuServ(newsockfd);
+    msgMenuServ(newsockfd, username);
 
 }
 
