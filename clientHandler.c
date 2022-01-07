@@ -87,6 +87,7 @@ void loggedMenuCli(int sockfd, char name[10]) {
     }
 
 
+
     while(exitFlag == 0) {
         printf("What you want to do?\n");
         printf("Select your option: \n");
