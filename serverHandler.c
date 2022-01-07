@@ -21,24 +21,28 @@ void welcomeServ(int newsockfd) {
     bzero(username, sizeof(username));
 
     while (exitFlag == 0) {
+        printf("welcome loop\n");
         bzero(buffer, 10); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 10));
 
         option = atoi(buffer);
         switch (option) {
             case 1:
+                printf("welcome opt1\n");
                 msg = "Option 1\n";
                 chScWErr(write(newsockfd, msg, strlen(msg) + 1));
                 exitFlag = 1;
                 registerUser(newsockfd);
                 break;
             case 2:
+                printf("welcome opt2\n");
                 msg = "Option 2\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
                 exitFlag = 1;
                 authServ(newsockfd);
                 break;
             case 3:
+                printf("welcome opt3\n");
                 msg = "See you soon :)\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
                 exit(0);
@@ -65,48 +69,60 @@ void loggedMenuServ(int newsockfd) {
 
 
     while (exitFlag == 0) {
+        printf("logged loop\n");
         bzero(buffer, 10); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, 10));
+        printf("logged buffer read: %s\n",buffer);
 
         option = atoi(buffer);
         switch (option) {
-            case 0:
+            /*case 0:
+                printf("logged opt0\n");
                 sendFileServ(newsockfd);
-                break;
+                break;*/
             case 1:
+                printf("logged opt1\n");
                 deleteUser(username);
                 welcomeServ(newsockfd);
                 exitFlag = 1;
                 break;
             case 2:
+                printf("logged opt2\n");
                 exitFlag = 1;
                 welcomeServ(newsockfd);
                 break;
             case 3:
+                printf("logged opt3\n");
                 exitFlag = 1;
                 addFriend(newsockfd, username);
                 break;
             case 4:
+                printf("logged opt4\n");
                 exitFlag = 1;
                 removeFriend(newsockfd, username);
                 break;
             case 5:
+                printf("logged opt5\n");
                 exitFlag = 1;
                 msgMenuServ(newsockfd, username);
                 break;
             case 6:
+                printf("logged opt6\n");
                 exitFlag = 1;
                 fileMenuServ(newsockfd);
                 break;
             case 7:
+                printf("logged opt7\n");
                 exitFlag = 1;
                 groupMenuServ(newsockfd, username);
                 break;
             case 8:
+                printf("logged opt8\n");
                 exitFlag = 1;
                 manageRequests(newsockfd, username);
                 break;
             case 9:
+                printf("logged opt9\n");
                 msg = "See you soon :)\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
                 exit(0);
@@ -168,7 +184,9 @@ void fileMenuServ(int newsockfd) {
         switch (option) {
             case 1:
                 exitFlag = 1;
+                printf("file opt1\n");
                 rcvFileServ(newsockfd);
+                loggedMenuServ(newsockfd);
                 break;
             case 2:
                 exitFlag = 1;

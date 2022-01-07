@@ -154,8 +154,8 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
     }
 }
 
-char* getFilename(int sockfd) {
-
+char* getName(int sockfd) {
+    return myName;
 }
 
 void rcvFileCli(int sockfd) {
@@ -163,7 +163,7 @@ void rcvFileCli(int sockfd) {
     //send your name  to server
     char buffer[256];
 
-    strcpy(myName, "Pepa");
+    //strcpy(myName, "Pepa");
     bzero(buffer, sizeof(buffer));
     strcpy(buffer, myName);
     //chScWErr(write(sockfd, buffer, sizeof(buffer)));
@@ -275,8 +275,8 @@ int client(int argc, char *argv[])
 
 
 
-    //welcomeCli(sockfd);
-    rcvFileCli(sockfd);
+    welcomeCli(sockfd);
+    //rcvFileCli(sockfd);
     exit(0);
 
     for (;;) {

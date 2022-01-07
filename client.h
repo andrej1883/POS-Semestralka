@@ -18,7 +18,7 @@ void sendMessageClie(int sockfd);
 void sendFileClie(char *filename, int sockfd, char *toUser);
 
 void rcvFileCli(int newsockfd);
-
+char* getName(int sockfd);
 
 void addMemberClie(int sockfd);
 void createGroupClie(int sockfd);

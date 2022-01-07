@@ -206,6 +206,7 @@ void fileMenuCli(int sockfd) {
                 trimNL(buffer2,sizeof (buffer2));
                 exitFlag = 1;
                 sendFileClie(buffer,sockfd,buffer2);
+                loggedMenuCli(sockfd, getName(sockfd));
                 break;
             case 2:
                 exitFlag = 1;
