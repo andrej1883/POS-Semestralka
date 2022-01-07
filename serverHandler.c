@@ -6,17 +6,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include "serverHandler.h"
 #include "errors.h"
 #include "server.h"
 
 char username[10];
 
-void welcomeServ(int newsockfd) {
+void welcomeServ(int pnewsockfd,struct sockaddr_un cli_addr,  socklen_t cli_len) {
     char buffer[10];
     int exitFlag = 0;
     int option;
     char *msg;
+    int newsockfd;
+    chScACErr(newsockfd = accept(pnewsockfd, (struct sockaddr *) &cli_addr,&cli_len));
 
     bzero(username, sizeof(username));
 
@@ -30,7 +34,7 @@ void welcomeServ(int newsockfd) {
                 msg = "Option 1\n";
                 chScWErr(write(newsockfd, msg, strlen(msg) + 1));
                 exitFlag = 1;
-                registerUser(newsockfd);
+                registerUser(newsockfd,cli_addr,cli_len);
                 break;
             case 2:
                 msg = "Option 2\n";
@@ -49,9 +53,10 @@ void welcomeServ(int newsockfd) {
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
         }
     }
+    //close(newsockfd);
 }
 
-void loggedMenuServ(int newsockfd) {
+void loggedMenuServ(int newsockfd,struct sockaddr_in cli_addr,  socklen_t cli_len) {
     char buffer[10];
     int exitFlag = 0;
     int option;
@@ -75,12 +80,12 @@ void loggedMenuServ(int newsockfd) {
                 break;
             case 1:
                 deleteUser(username);
-                welcomeServ(newsockfd);
+                welcomeServ(newsockfd,cli_addr,cli_len);
                 exitFlag = 1;
                 break;
             case 2:
                 exitFlag = 1;
-                welcomeServ(newsockfd);
+                welcomeServ(newsockfd,cli_addr,cli_len);
                 break;
             case 3:
                 exitFlag = 1;
@@ -96,7 +101,7 @@ void loggedMenuServ(int newsockfd) {
                 break;
             case 6:
                 exitFlag = 1;
-                fileMenuServ(newsockfd);
+                fileMenuServ(newsockfd,cli_addr,cli_len);
                 break;
             case 7:
                 exitFlag = 1;
@@ -116,9 +121,10 @@ void loggedMenuServ(int newsockfd) {
                 exitFlag = 0;
                 msg = "Choose correct option!\n";
                 chScWErr(write(newsockfd, msg, strlen(msg) + 1));
-                loggedMenuServ(newsockfd);
+                loggedMenuServ(newsockfd,cli_addr,cli_len);
         }
     }
+    //close(newsockfd);
 }
 
 void msgMenuServ(int newsockfd, char *username) {
@@ -143,7 +149,7 @@ void msgMenuServ(int newsockfd, char *username) {
                 break;
             case 3:
                 exitFlag = 1;
-                loggedMenuServ(newsockfd);
+                //loggedMenuServ(newsockfd,cli_addr,cli_len);
                 break;
 
             default:
@@ -154,11 +160,13 @@ void msgMenuServ(int newsockfd, char *username) {
     }
 }
 
-void fileMenuServ(int newsockfd) {
+void fileMenuServ(int pnewsockfd,struct sockaddr_in cli_addr,  socklen_t cli_len) {
     char buffer[10];
     int exitFlag = 0;
     int option;
     char *msg;
+    int newsockfd;
+    chScACErr(newsockfd = accept(pnewsockfd, (struct sockaddr *) &cli_addr,&cli_len));
 
     while (exitFlag == 0) {
         bzero(buffer, 10); //vynulujem buffer
@@ -169,6 +177,7 @@ void fileMenuServ(int newsockfd) {
             case 1:
                 exitFlag = 1;
                 rcvFileServ(newsockfd);
+                welcomeServ(newsockfd,cli_addr,cli_len);
                 break;
             case 2:
                 exitFlag = 1;
@@ -176,7 +185,7 @@ void fileMenuServ(int newsockfd) {
                 break;
             case 3:
                 exitFlag = 1;
-                loggedMenuServ(newsockfd);
+                loggedMenuServ(newsockfd,cli_addr,cli_len);
                 break;
 
             default:
@@ -185,6 +194,7 @@ void fileMenuServ(int newsockfd) {
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));
         }
     }
+    //close(newsockfd);
 }
 
 void groupMenuServ(int newsockfd, char *username) {
@@ -222,7 +232,7 @@ void groupMenuServ(int newsockfd, char *username) {
 
             case 6:
                 exitFlag = 1;
-                loggedMenuServ(newsockfd);
+                //loggedMenuServ(newsockfd);
                 break;
 
             default:

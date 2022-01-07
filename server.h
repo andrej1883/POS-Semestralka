@@ -1,13 +1,26 @@
-
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include "errors.h"
+#include "serverHandler.h"
+#include "unistd.h"
 
 #ifndef SOCKETY_SERVER_H
 #define SOCKETY_SERVER_H
+
+struct sockaddr_in getCliAddr();
+socklen_t getCliLen();
 
 void trimNL(char* arr, int length);
 void authServ(int newsockfd);
 void updateAccountsLoad();
 void updateAccountsSave();
-void registerUser(int newsockfd);
+void registerUser(int newsockfd,struct sockaddr_in cli_addr,  socklen_t cli_len);
 void deleteUser(char* name);
 void rcvFileServ(int newsockfd);
 

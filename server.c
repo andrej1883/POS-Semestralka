@@ -1,13 +1,4 @@
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include "errors.h"
-#include "serverHandler.h"
+
 #include "server.h"
 
 typedef struct {
@@ -63,6 +54,10 @@ int numberUsers = 0;
 int fileIdS = 0;
 int filesCount = 0;
 
+struct sockaddr_in serv_addr, cli_addr;
+int sockfd, newsockfd;
+socklen_t cli_len;
+
 void trimNL(char *arr, int length) {
     for (int i = 0; i < length; ++i) {
         if (arr[i] == '\n') {
@@ -112,7 +107,7 @@ void addFriend(int newsockfd, char *username) {
     //strcpy(choise, buffer);
     const char *msg = "Friend request sent!";
     chScWErr(write(newsockfd, msg, strlen(msg) + 1));
-    loggedMenuServ(newsockfd);
+    //loggedMenuServ(newsockfd);
 
 }
 
@@ -172,13 +167,13 @@ void authServ(int newsockfd) {
     if (userFound == 0) {
         const char *msg = "Login or password incorrect!";
         chScWErr(write(newsockfd, msg, strlen(msg) + 1));
-        welcomeServ(newsockfd);
+        //welcomeServ(newsockfd);
     }
 
     if (userFound == 1) {
         const char *msg = "User sucesfully logged in";
         chScWErr(write(newsockfd, msg, strlen(msg) + 1));
-        loggedMenuServ(newsockfd);
+        loggedMenuServ(newsockfd,getCliAddr(),getCliLen());
     }
 }
 
@@ -395,7 +390,7 @@ void getMessagesFrom(int newsockfd, char *msgOfUser, char *msgFromUser) {
     chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 }
 
-void registerUser(int newsockfd) {
+void registerUser(int newsockfd,struct sockaddr_in cli_addr,  socklen_t cli_len) {
     user *new = (user *) malloc(sizeof(user));
     char buffer[10];
 
@@ -424,7 +419,8 @@ void registerUser(int newsockfd) {
     }
     const char *msg = "User sucesfully registered";
     chScWErr(write(newsockfd, msg, strlen(msg) + 1));
-    loggedMenuServ(newsockfd);
+    loggedMenuServ(newsockfd,cli_addr,cli_len);
+    //loggedMenuServ(newsockfd,cli_addr,cli_len);
 }
 
 void deleteUser(char *name) {
@@ -633,12 +629,20 @@ void rcvFileServ(int newsockfd) {
         fprintf(filepointer, "%s", buffer);
         bzero(buffer, 1024);
     }
+    return;
+}
+
+struct sockaddr_in getCliAddr() {
+    return cli_addr;
+}
+
+socklen_t getCliLen() {
+    return cli_len;
 }
 
 int server(int argc, char *argv[]) {
-    int sockfd, newsockfd;
-    socklen_t cli_len;
-    struct sockaddr_in serv_addr, cli_addr;
+
+
     char buffer[256];
 
     if (argc < 2) {
@@ -656,8 +660,7 @@ int server(int argc, char *argv[]) {
                    sizeof(serv_addr))); // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
 
 
-    listen(sockfd,
-           5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
+    listen(sockfd,5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
     cli_len = sizeof(cli_addr);
 
     chScACErr(newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr,
@@ -686,9 +689,8 @@ int server(int argc, char *argv[]) {
     //getFileInfoServ(newsockfd);
 
 
-
-    //welcomeServ(newsockfd);
-    sendFileServ(newsockfd);
+    welcomeServ(newsockfd, cli_addr,cli_len);
+    //sendFileServ(newsockfd);
     exit(0);
 
     for (;;) {
@@ -813,7 +815,7 @@ void manageRequests(int newsockfd, char *username) {
         }
     }
 
-    loggedMenuServ(newsockfd);
+    //loggedMenuServ(newsockfd);
 }
 
 void removeFriend(int newsockfd, char *username) {
@@ -900,7 +902,7 @@ void removeFriend(int newsockfd, char *username) {
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
     }
 
-    loggedMenuServ(newsockfd);
+    //loggedMenuServ(newsockfd);
 
 }
 
@@ -971,7 +973,7 @@ void sendMessage(int newsockfd, char *username) {
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     }
-    loggedMenuServ(newsockfd);
+    //loggedMenuServ(newsockfd);
 }
 
 void readMessages(int newsockfd, char *username) {
@@ -1028,7 +1030,7 @@ void readMessages(int newsockfd, char *username) {
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
     }
 
-    loggedMenuServ(newsockfd);
+    //loggedMenuServ(newsockfd);
 
 }
 
@@ -1064,7 +1066,7 @@ void createGroup(int newsockfd, char *founderName) {
     strcpy(buffer, "Chat created! \n");
     chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-    loggedMenuServ(newsockfd);
+    //loggedMenuServ(newsockfd);
 
 }
 
@@ -1137,7 +1139,7 @@ void addMember(int newsockfd, char *membersName) {
     strcpy(buffer, "User added to chat! \n");
     chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-    loggedMenuServ(newsockfd);
+    //loggedMenuServ(newsockfd);
 
 }
 
@@ -1203,7 +1205,7 @@ void removeMember(int newsockfd, char *membersName) {
             managingUser->groupChats[i] = managingUser->groupChats[i + 1];
         }
     }
-    loggedMenuServ(newsockfd);
+   //loggedMenuServ(newsockfd);
 
 }
 
@@ -1295,7 +1297,7 @@ void sendGroupMessage(int newsockfd, char *userName) {
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     }
-    loggedMenuServ(newsockfd);
+    //loggedMenuServ(newsockfd);
 }
 
 void getGroupMessages(int newsockfd, char *username) {
@@ -1359,5 +1361,5 @@ void getGroupMessages(int newsockfd, char *username) {
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     }
-    loggedMenuServ(newsockfd);
+    //loggedMenuServ(newsockfd);
 }

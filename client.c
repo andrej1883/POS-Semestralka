@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include "errors.h"
@@ -163,7 +162,7 @@ void rcvFileCli(int sockfd) {
     //send your name  to server
     char buffer[256];
 
-    strcpy(myName, "Pepa");
+    //strcpy(myName, "Majko");
     bzero(buffer, sizeof(buffer));
     strcpy(buffer, myName);
     //chScWErr(write(sockfd, buffer, sizeof(buffer)));
@@ -275,8 +274,8 @@ int client(int argc, char *argv[])
 
 
 
-    //welcomeCli(sockfd);
-    rcvFileCli(sockfd);
+    welcomeCli(sockfd);
+    //rcvFileCli(sockfd);
     exit(0);
 
     for (;;) {

@@ -206,6 +206,7 @@ void fileMenuCli(int sockfd) {
                 trimNL(buffer2,sizeof (buffer2));
                 exitFlag = 1;
                 sendFileClie(buffer,sockfd,buffer2);
+                backTologMenu(sockfd);
                 break;
             case 2:
                 exitFlag = 1;
