@@ -147,27 +147,18 @@ void establishFriendship(char *friendOne, char *friendTwo) {
 
 void authServ(int newsockfd) {
 
-    char buffer[255];
+    char buffer[10];
     char name[10];
     char psswd[10];
     int userFound = 0;
-    int n;
 
-    bzero(buffer, 255); //vynulujem buffer
-    //chScRErr(read(newsockfd, buffer, 10));
-    n = recv(newsockfd,buffer,10,MSG_WAITALL);
-    if(n < 0){
-        perror("Receive option Error:");
-    }
+    bzero(buffer, 10); //vynulujem buffer
+    chScRErr(read(newsockfd, buffer, 10));
     trimNL(buffer, sizeof(buffer));
     strcpy(name, buffer);
 
-    bzero(buffer, 255); //vynulujem buffer
-    n = recv(newsockfd,buffer,10,MSG_WAITALL);
-    if(n < 0){
-        perror("Receive option Error:");
-    }
-    //chScRErr(read(newsockfd, buffer, 10));
+    bzero(buffer, 10); //vynulujem buffer
+    chScRErr(read(newsockfd, buffer, 10));
     trimNL(buffer, sizeof(buffer));
     strcpy(psswd, buffer);
 
@@ -180,21 +171,13 @@ void authServ(int newsockfd) {
     }
     if (userFound == 0) {
         const char *msg = "Login or password incorrect!";
-        //chScWErr(write(newsockfd, msg, strlen(msg) + 1));
-        n = send(newsockfd,msg,255,MSG_EOR);
-        if(n < 0){
-            perror("Send option Error:");
-        }
+        chScWErr(write(newsockfd, msg, strlen(msg) + 1));
         welcomeServ(newsockfd);
     }
 
     if (userFound == 1) {
         const char *msg = "User sucesfully logged in";
-        n = send(newsockfd,msg,255,MSG_EOR);
-        if(n < 0){
-            perror("Send option Error:");
-        }
-        //chScWErr(write(newsockfd, msg, strlen(msg) + 1));
+        chScWErr(write(newsockfd, msg, strlen(msg) + 1));
         loggedMenuServ(newsockfd);
     }
 }
@@ -409,7 +392,9 @@ void getMessagesFrom(int newsockfd, char *msgOfUser, char *msgFromUser) {
         strcat(buffer, usersMessages[i]->text);
     }
     printf("%s\n", buffer);
-    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+    //chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+    send(newsockfd,buffer,255,MSG_EOR);
+
 }
 
 void registerUser(int newsockfd) {
@@ -419,7 +404,7 @@ void registerUser(int newsockfd) {
 
     bzero(buffer, 255); //vynulujem buffer
     //chScRErr(read(newsockfd, buffer, 10));
-    n = recv(newsockfd,buffer,10,MSG_WAITALL);
+    n = recv(newsockfd,buffer,255,MSG_WAITALL);
     if(n < 0){
         perror("Receive option Error:");
     }
@@ -429,7 +414,7 @@ void registerUser(int newsockfd) {
 
     bzero(buffer, 255); //vynulujem buffer
     //chScRErr(read(newsockfd, buffer, 10));
-    n = recv(newsockfd,buffer,10,MSG_WAITALL);
+    n = recv(newsockfd,buffer,255,MSG_WAITALL);
     if(n < 0){
         perror("Receive option Error:");
     }
@@ -811,8 +796,12 @@ void manageRequests(int newsockfd, char *username) {
                 }
             }
         } else {
+            bzero(buffer, 256);
             strcpy(buffer, "Wrong value\n");
             chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+            bzero(buffer, 256); //vynulujem buffer
+            chScRErr(read(newsockfd, buffer, 256));
         }
     }
 
@@ -988,6 +977,7 @@ void sendMessage(int newsockfd, char *username) {
 
 void readMessages(int newsockfd, char *username) {
     char buffer[256];
+    int n;
     user *managingUser = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) == 0) {
@@ -1009,11 +999,15 @@ void readMessages(int newsockfd, char *username) {
             strcat(buffer, "\n");
         }
 
-        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        //chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        send(newsockfd,buffer,255,MSG_EOR);
 
         bzero(buffer, 256); //vynulujem buffer
-        chScRErr(read(newsockfd, buffer, 256));
-
+        //chScRErr(read(newsockfd, buffer, 256));
+        n = recv(newsockfd, buffer, 255, MSG_WAITALL);
+        if(n < 0){
+            perror("Receive name Error:");
+        }
         int chosenFrd;
         sscanf(buffer, "%d", &chosenFrd);
 
@@ -1030,14 +1024,20 @@ void readMessages(int newsockfd, char *username) {
     } else {
         bzero(buffer, 256);
         strcpy(buffer, "You have no friends so no messages :( \n Press 0 to continue");
-        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        //chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        send(newsockfd,buffer,255,MSG_EOR);
 
         bzero(buffer, 256); //vynulujem buffer
-        chScRErr(read(newsockfd, buffer, 256));
+        //chScRErr(read(newsockfd, buffer, 256));
+        n = recv(newsockfd, buffer, 255, MSG_WAITALL);
+        if(n < 0){
+            perror("Receive name Error:");
+        }
 
         bzero(buffer, 256);
         strcpy(buffer, "You can add friends in following menu  \n");
-        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        //chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        send(newsockfd,buffer,255,MSG_EOR);
     }
 
     msgMenuServ(newsockfd, username);
@@ -1187,10 +1187,10 @@ void removeMember(int newsockfd, char *membersName) {
 
     }
 
-    int chosen;
+    int chosen = 0;
     for (int i = 0; i < group->numMemb; ++i) {
         if (strcmp(group->members[i]->fUsername, membersName) == 0) {
-            chosen == i;
+            chosen = i;
         }
     }
     group->numMemb--;
@@ -1256,7 +1256,7 @@ void sendGroupMessage(int newsockfd, char *userName) {
 
     if (managingUser->numGroups != 0) {
         bzero(buffer, 256);
-        strcpy(buffer, "Choose Groupchat: \n");
+        strcpy(buffer, "Choose Group chat: \n");
 
         for (int i = 0; i < managingUser->numGroups; ++i) {
             int val = i;
@@ -1304,6 +1304,13 @@ void sendGroupMessage(int newsockfd, char *userName) {
 
         bzero(buffer, 256);
         strcpy(buffer, "You can create a groupchat in following menu  \n");
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+        bzero(buffer, 256);
+        strcpy(buffer, "Don't forget to add group members :)  \n");
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     }

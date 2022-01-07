@@ -16,48 +16,31 @@
 char myName[10];
 
 void authClie(int sockfd) {
-    char buffer[255];
-    int n;
+    char buffer[256];
 
     printf("Log into server: \n");
     printf("Please enter username: ");
 
-    bzero(buffer, 10); //vynulujem buffer
-    fgets(buffer, 10, stdin); //naplnim buffer
-    //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
-    n = send(sockfd,buffer,10,MSG_EOR);
-    if(n < 0){
-        perror("Send option Error:");
-    }
-    trimNL(buffer,sizeof(buffer));
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
     for (int i = 0; i < 10; ++i) {
         myName[i] = buffer[i];
     }
 
     printf("Please enter password: ");
-    bzero(buffer, 10); //vynulujem buffer
-    fgets(buffer, 10, stdin); //naplnim buffer
-    //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
-    n = send(sockfd,buffer,10,MSG_EOR);
-    if(n < 0){
-        perror("Send option Error:");
-    }
+    bzero(buffer, 256); //vynulujem buffer
+    fgets(buffer, 255, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
 
 
-
-    bzero(buffer, 255); //vynulujem buffer
-    //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-    n = recv(sockfd,buffer,255,MSG_WAITALL);
-    if(n < 0){
-        perror("Receive option Error:");
-    }
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     if(strcmp(buffer,"Login or password incorrect!") == 0) {
         welcomeCli(sockfd);
-    }
-
-    if(strcmp(buffer,"User sucesfully logged in") == 0) {
+    } else {
         loggedMenuCli(sockfd,myName);
     }
 
@@ -81,22 +64,36 @@ void addFriendClie(int sockfd) {
 
     if(strcmp(buffer,"Friend request sent!") == 0) {
         loggedMenuCli(sockfd,myName);
+    } else {
+        printf("Friend request error, not sent\n");
     }
 }
 
 void getMessagesClie(int sockfd) {
     char buffer[256];
+    int n;
 
     bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+
+    n = recv(sockfd, buffer, 255, MSG_WAITALL);
+    if(n < 0){
+        perror("Receive name Error:");
+    }
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    send(sockfd,buffer,255,MSG_EOR);
 
     bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+
+    n = recv(sockfd, buffer,255, MSG_WAITALL);
+    if(n < 0){
+        perror("Receive name Error:");
+    }
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     msgMenuCli( sockfd);
@@ -375,7 +372,7 @@ void removeFriendClie(int sockfd) {
     printf("%s\n", buffer); //vypisem spravu od serveru
 
 
-    if((strcmp(buffer,"Friend removed!\n") == 0) || (strcmp(buffer,"You have no friends :( \n") == 0)) {
+    if((strcmp(buffer,"Friend removed!\n") == 0) || (strcmp(buffer,"You can add friends in following menu  \n") == 0)) {
         loggedMenuCli(sockfd,myName);
     }
 }
