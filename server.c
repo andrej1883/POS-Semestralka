@@ -816,6 +816,9 @@ void manageRequests(int newsockfd, char *username) {
             chScRErr(read(newsockfd, buffer, 256));
         }
     }
+    bzero(buffer, 256);
+    strcpy(buffer, "All doner\n");
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     loggedMenuServ(newsockfd);
 }
