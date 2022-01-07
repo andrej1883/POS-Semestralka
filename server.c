@@ -518,7 +518,8 @@ void sendFileServ(int newsockfd, char* current) {
         chScRErr(read(newsockfd, buffer, sizeof(buffer)));*/
 
         bzero(buffer, sizeof (buffer));
-        n = recv(newsockfd, buffer, sizeof(buffer), MSG_WAITALL);
+        chScRErr(read(newsockfd, buffer, sizeof(buffer)));
+        n = recv(newsockfd, buffer, 256, MSG_WAITALL);
         if(n < 0){
             perror("Receive name Error:");
         }
@@ -556,7 +557,7 @@ void sendFileServ(int newsockfd, char* current) {
             {
                 strcat(fileBuffer,data);
             }
-            chSFErr(send(newsockfd,fileBuffer,sizeof (fileBuffer),0));
+            chSFErr(send(newsockfd,fileBuffer,2048,0));
             bzero(data, 1024);
             fclose(filePointer);
         } else {
@@ -579,11 +580,12 @@ void getFileInfoServ(int newsockfd) {
     fileInfo *new = (fileInfo *) malloc(sizeof(fileInfo));
 
     bzero(buffer, 256);
-    //chScRErr(read(newsockfd, buffer, 256));
-    n = recv(newsockfd, buffer, 256, MSG_WAITALL);
+    chScRErr(read(newsockfd, buffer, 256));
+    chScRErr(read(newsockfd, buffer, 256));
+    /*n = recv(newsockfd, buffer, 256, MSG_WAITALL);
     if(n < 0){
         perror("Receive name Error:");
-    }
+    }*/
     sscanf(buffer, "%s %s %s", new->fileName, new->fromUser, new->toUser);
     new->fileIDI = fileIdS;
     fileIdS++;
