@@ -27,6 +27,7 @@ void authClie(int sockfd) {
     for (int i = 0; i < 10; ++i) {
         myName[i] = buffer[i];
     }
+    trimNL(myName,sizeof (myName));
 
     printf("Please enter password: ");
     bzero(buffer, 256); //vynulujem buffer
@@ -41,7 +42,7 @@ void authClie(int sockfd) {
     if(strcmp(buffer,"Login or password incorrect!") == 0) {
         welcomeCli(sockfd);
     } else {
-        loggedMenuCli(sockfd,myName);
+        loggedMenuCli(sockfd);
     }
 
 }
@@ -63,7 +64,7 @@ void addFriendClie(int sockfd) {
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     if(strcmp(buffer,"Friend request sent!") == 0) {
-        loggedMenuCli(sockfd,myName);
+        loggedMenuCli(sockfd);
     }
 }
 
@@ -105,6 +106,7 @@ void registerClie(int sockfd) {
     for (int i = 0; i < 10; ++i) {
         myName[i] = buffer[i];
     }
+    trimNL(myName,sizeof (myName));
 
     printf("Please enter password: ");
     bzero(buffer, 256); //vynulujem buffer
@@ -117,7 +119,7 @@ void registerClie(int sockfd) {
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     if(strcmp(buffer,"User sucesfully registered") == 0) {
-        loggedMenuCli(sockfd,myName);
+        loggedMenuCli(sockfd);
     }
 }
 
@@ -154,20 +156,16 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
     }
 }
 
-char* getFilename(int sockfd) {
-
-}
-
 void rcvFileCli(int sockfd) {
     //TODO 2: Get files from server
     //send your name  to server
     char buffer[256];
 
-    strcpy(myName, "Pepa");
+    /*//strcpy(myName, "Pepa");
     bzero(buffer, sizeof(buffer));
     strcpy(buffer, myName);
     //chScWErr(write(sockfd, buffer, sizeof(buffer)));
-    send(sockfd,buffer,10,MSG_EOR);
+    send(sockfd,buffer,10,MSG_EOR);*/
 
 
     bzero(buffer, sizeof (buffer)); //vynulujem buffer
@@ -219,6 +217,10 @@ void rcvFileCli(int sockfd) {
             bzero(fileBuffer, 1024);
         }
     }
+}
+
+char* getMyName() {
+    return myName;
 }
 
 int client(int argc, char *argv[])
@@ -275,8 +277,8 @@ int client(int argc, char *argv[])
 
 
 
-    //welcomeCli(sockfd);
-    rcvFileCli(sockfd);
+    welcomeCli(sockfd);
+    //rcvFileCli(sockfd);
     exit(0);
 
     for (;;) {
@@ -322,7 +324,7 @@ void manageRequestsClie(int sockfd) {
     fgets(buffer, 255, stdin); //naplnim buffer
     chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
 
-    loggedMenuCli(sockfd,myName);
+    loggedMenuCli(sockfd);
 }
 
 void removeFriendClie(int sockfd) {
@@ -343,12 +345,12 @@ void removeFriendClie(int sockfd) {
 
 
     if((strcmp(buffer,"Friend removed!\n") == 0) || (strcmp(buffer,"You have no friends :( \n") == 0)) {
-        loggedMenuCli(sockfd,myName);
+        loggedMenuCli(sockfd);
     }
 }
 
 void backTologMenu(int sockfd) {
-    loggedMenuCli(sockfd,myName);
+    loggedMenuCli(sockfd);
 }
 
 void sendMessageClie(int sockfd) {
@@ -376,7 +378,7 @@ void sendMessageClie(int sockfd) {
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    loggedMenuCli(sockfd,myName);
+    loggedMenuCli(sockfd);
 }
 
 void addMemberClie(int sockfd) {
@@ -402,7 +404,7 @@ void addMemberClie(int sockfd) {
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    loggedMenuCli(sockfd,myName);
+    loggedMenuCli(sockfd);
 }
 
 void removeMemberClie(int sockfd) {
@@ -415,7 +417,7 @@ void removeMemberClie(int sockfd) {
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
     chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
-    loggedMenuCli(sockfd,myName);
+    loggedMenuCli(sockfd);
 }
 
 void createGroupClie(int sockfd) {
@@ -433,7 +435,7 @@ void createGroupClie(int sockfd) {
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    loggedMenuCli(sockfd,myName);
+    loggedMenuCli(sockfd);
 }
 
 void sendGroupMessageClie(int sockfd) {
@@ -459,7 +461,7 @@ void sendGroupMessageClie(int sockfd) {
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    loggedMenuCli(sockfd,myName);
+    loggedMenuCli(sockfd);
 }
 
 void getGroupMessagesClie(int sockfd) {
@@ -476,5 +478,5 @@ void getGroupMessagesClie(int sockfd) {
     bzero(buffer, 256); //vynulujem buffer
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
-    loggedMenuCli(sockfd,myName);
+    loggedMenuCli(sockfd);
 }

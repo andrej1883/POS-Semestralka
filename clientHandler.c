@@ -57,13 +57,13 @@ void welcomeCli(int sockfd) {
 
 }
 
-void loggedMenuCli(int sockfd, char name[10]) {
+void loggedMenuCli(int sockfd) {
     char buffer[256];
     int exitFlag = 0;
     int option;
 
     bzero(buffer, 256); //vynulujem buffer
-    strcpy(buffer,name);
+    strcpy(buffer,getMyName());
     chScWErr(write(sockfd, buffer, strlen(buffer)));
 
 
@@ -90,6 +90,7 @@ void loggedMenuCli(int sockfd, char name[10]) {
         switch (option) {
             case 0:
                 rcvFileCli(sockfd);
+                exitFlag = 1;
                 break;
             case 1:
                 exitFlag = 1;

@@ -442,9 +442,9 @@ void deleteUser(char *name) {
 
 }
 
-void sendFileServ(int newsockfd) {
+void sendFileServ(int newsockfd, char* current) {
     //TODO 1 : Send from server to specific user
-    char current[10];
+    //char current[10];
     char buffer[256];
     char loaded[10];
     int n;
@@ -454,11 +454,11 @@ void sendFileServ(int newsockfd) {
     chScRErr(read(newsockfd, current, 10));
     trimNL(current, sizeof(current));*/
 
-    bzero(current, sizeof (current));
-    n = recv(newsockfd, current, sizeof(current), MSG_WAITALL);
+    /*bzero(current, sizeof (current));
+    n = recv(newsockfd, current, sizeof(current), 0);
     if(n < 0){
         perror("Receive name Error:");
-    }
+    }*/
 
     //creating temporary fileList
     fileInfo *temporary[9999];
@@ -687,8 +687,8 @@ int server(int argc, char *argv[]) {
 
 
 
-    //welcomeServ(newsockfd);
-    sendFileServ(newsockfd);
+    welcomeServ(newsockfd);
+    //sendFileServ(newsockfd);
     exit(0);
 
     for (;;) {

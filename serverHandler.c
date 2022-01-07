@@ -71,7 +71,8 @@ void loggedMenuServ(int newsockfd) {
         option = atoi(buffer);
         switch (option) {
             case 0:
-                sendFileServ(newsockfd);
+                sendFileServ(newsockfd,username);
+                exitFlag = 1;
                 break;
             case 1:
                 deleteUser(username);
@@ -172,7 +173,7 @@ void fileMenuServ(int newsockfd) {
                 break;
             case 2:
                 exitFlag = 1;
-                sendFileServ(newsockfd);
+                sendFileServ(newsockfd,username);
                 break;
             case 3:
                 exitFlag = 1;
