@@ -216,7 +216,7 @@ void fileMenuCli(int sockfd) {
                 break;
             case 3:
                 exitFlag = 1;
-                welcomeCli(sockfd);
+                loggedMenuCli(sockfd);
                 break;
             default:
                 bzero(buffer, 256); //vynulujem buffer

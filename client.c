@@ -151,7 +151,7 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
         {
             strcat(buffer,data);
         }
-        chSFErr(send(sockfd,buffer,sizeof (buffer),0));
+        chSFErr(send(sockfd,buffer,2048,0));
         bzero(data, 1024);
         fclose(filePointer);
     } else {

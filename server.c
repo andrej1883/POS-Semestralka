@@ -550,50 +550,11 @@ void sendFileServ(int newsockfd, char* current) {
         strcpy(buffer, "There are no available files for you\n");
         chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
     }
-    // loggedMenuServ(newsockfd);
-    /*//sending file list/no files message
-    chScWErr(write(newsockfd, buffer, strlen(buffer)+1));
-    //user option(which file)
-    bzero(buffer,256); //vynulujem buffer
-    chScRErr(read(newsockfd, buffer, 256));
-
-    int chosenReq;
-    sscanf(buffer, "%d", &chosenReq);
-
-    char file[100] = "files/";
-    char type[5] = ".fl";
-    char sId[10];
-
-
-    sprintf(sId,"%i",temporary[chosenReq]->fileIDI);
-    strcat(file,sId);
-    strcat(file,type);
-
-    FILE *filePointer;
-    char data[1024] = {0};
-    trimNL(file,sizeof (file));
-    if( access( file, F_OK ) == 0 ) {
-        bzero(buffer,sizeof (buffer));
-        strcpy(buffer,temporary[chosenReq]->fileName);
-        chScWErr(write(newsockfd,buffer, strlen(buffer)));
-        filePointer = fopen(file, "r") ;
-        while( fgets ( data, 1024, filePointer ) != NULL )
-        {
-            chSFErr(send(newsockfd,data,sizeof (data),0));
-        }
-        bzero(data, 1024);
-        fclose(filePointer);
-    } else {
-        printf("File not found!\n");
-    }*/
 }
 
 void getFileInfoServ(int newsockfd) {
     //funguje
     char buffer[256];
-    char filename[256];
-    char from[10];
-    char to[10];
 
     fileInfo *new = (fileInfo *) malloc(sizeof(fileInfo));
 
