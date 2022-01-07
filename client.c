@@ -68,7 +68,7 @@ void addFriendClie(int sockfd) {
     }
 }
 
-void getMessagesClie(int sockfd) {
+void getMessagesClie(int sockfd) { //read messages on server
     char buffer[256];
     int n;
 
@@ -465,6 +465,11 @@ void removeMemberClie(int sockfd) {
     bzero(buffer, 256); //vynulujem buffer
     fgets(buffer, 255, stdin); //naplnim buffer
     chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+
+    bzero(buffer, 256); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    printf("%s\n", buffer); //vypisem spravu od serveru
+
     loggedMenuCli(sockfd);
 }
 
@@ -526,5 +531,6 @@ void getGroupMessagesClie(int sockfd) {
     bzero(buffer, 256); //vynulujem buffer
     chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
+
     loggedMenuCli(sockfd);
 }

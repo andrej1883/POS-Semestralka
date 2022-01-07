@@ -1219,7 +1219,7 @@ void removeMember(int newsockfd, char *membersName) {
     int chosengr;
     for (int i = 0; i < managingUser->numGroups; ++i) {
         if (strcmp(managingUser->groupChats[i]->chatName, group->chatName) == 0) {
-            chosengr == i;
+            chosengr = i;
         }
     }
     managingUser->numGroups--;
@@ -1230,6 +1230,11 @@ void removeMember(int newsockfd, char *membersName) {
             managingUser->groupChats[i] = managingUser->groupChats[i + 1];
         }
     }
+
+    bzero(buffer, 256);
+    strcpy(buffer, "You left the chat\n");
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
     loggedMenuServ(newsockfd);
 
 }
