@@ -460,8 +460,8 @@ void deleteUser(char *name) {
 
 }
 
-void sendFileServ(int newsockfd) {
-    char current[10];
+void sendFileServ(int newsockfd, char* current) {
+    //char current[10];
     char buffer[256];
     char loaded[10];
     int n;
@@ -471,12 +471,11 @@ void sendFileServ(int newsockfd) {
     chScRErr(read(newsockfd, current, 10));
     trimNL(current, sizeof(current));*/
 
-    bzero(current, sizeof (current));
-    n = recv(newsockfd, current, sizeof(current), MSG_WAITALL);
+    /*bzero(current, sizeof (current));
+    n = recv(newsockfd, current, sizeof(current), 0);
     if(n < 0){
         perror("Receive name Error:");
-    }
-    trimNL(current, sizeof(current));
+    }*/
 
     //creating temporary fileList
     fileInfo *temporary[9999];
@@ -538,6 +537,7 @@ void sendFileServ(int newsockfd) {
 
         FILE *filePointer;
         char data[1024] = {0};
+        char fileBuffer[2048];
         trimNL(file, sizeof(file));
         if (access(file, F_OK) == 0) {
 
@@ -547,10 +547,16 @@ void sendFileServ(int newsockfd) {
             send(newsockfd,buffer,20,MSG_EOR);
 
             filePointer = fopen(file, "r");
-            while (fgets(data, 1024, filePointer) != NULL)
+            /*while (fgets(data, 1024, filePointer) != NULL)
             {
                 chSFErr(send(newsockfd, data, sizeof(data), 0));
+            }*/
+            bzero(fileBuffer,sizeof (fileBuffer));
+            while( fgets ( data, 50, filePointer ) != NULL )
+            {
+                strcat(fileBuffer,data);
             }
+            chSFErr(send(newsockfd,fileBuffer,sizeof (fileBuffer),0));
             bzero(data, 1024);
             fclose(filePointer);
         } else {
@@ -593,7 +599,7 @@ void rcvFileServ(int newsockfd) {
     //funguje
     int n;
     FILE *filepointer;
-    char buffer[1024];
+    char buffer[2048];
     char directory[100] = "files/";
     char type[5] = ".fl";
     char sId[10];
@@ -611,17 +617,23 @@ void rcvFileServ(int newsockfd) {
     getFileInfoServ(newsockfd);
 
     filepointer = fopen(directory, "w");
-    while (1) {
+    /*while (1) {
         n = recv(newsockfd, buffer, 1024, 0);
         if (n <= 0) {
             break;
         }
         fprintf(filepointer, "%s", buffer);
         bzero(buffer, 1024);
+    }*/
+    n = recv(newsockfd, buffer, 2048, MSG_WAITALL);
+    if (n < 0) {
+        perror("Receive file Error:");
     }
+
+    fprintf(filepointer,"%s",buffer);
+    bzero(buffer, 2048);
+    fclose(filepointer);
 }
-
-
 
 int server(int argc, char *argv[]) {
     int sockfd, newsockfd;
