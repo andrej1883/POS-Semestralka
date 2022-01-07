@@ -71,15 +71,16 @@ void welcomeCli(int sockfd) {
 
 }
 
-void loggedMenuCli(int sockfd, char name[10]) {
-    char buffer[10];
+void loggedMenuCli(int sockfd) {
+    char buffer[256];
     char bmsg[255];
     int exitFlag = 0;
     int option;
     int n;
 
+
     bzero(buffer, 10); //vynulujem buffer
-    strcpy(buffer,name);
+    strcpy(buffer,getMyName());
     //chScWErr(write(sockfd, buffer, strlen(buffer)));
     n = send(sockfd,buffer,10,MSG_EOR);
     if(n < 0){
@@ -111,52 +112,50 @@ void loggedMenuCli(int sockfd, char name[10]) {
         }
 
         option  = atoi(buffer);
+
         switch (option) {
             case 0:
                 rcvFileCli(sockfd);
+                exitFlag = 1;
                 break;
             case 1:
+                exitFlag = 1;
                 welcomeCli(sockfd);
                 break;
             case 2:
+                exitFlag = 1;
                 welcomeCli(sockfd);
                 break;
             case 3:
+                exitFlag = 1;
                 addFriendClie(sockfd);
                 break;
             case 4:
+                exitFlag = 1;
                 removeFriendClie(sockfd);
                 break;
             case 5:
+                exitFlag = 1;
                 msgMenuCli(sockfd);
                 break;
             case 6:
+                exitFlag = 1;
                 fileMenuCli(sockfd);
                 break;
             case 7:
+                exitFlag = 1;
                 groupMenuCli(sockfd);
                 break;
             case 8:
+                exitFlag = 1;
                 manageRequestsClie(sockfd);
                 break;
             case 9:
-                bzero(bmsg, 255); //vynulujem buffer
-                //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                n = recv(sockfd,bmsg,255,MSG_WAITALL);
-                if(n < 0){
-                    perror("Receive option Error:");
-                }
-                printf("%s\n", bmsg); //vypisem spravu od serveru
+                bzero(buffer, 256); //vynulujem buffer
+                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+                printf("%s\n", buffer); //vypisem spravu od serveru
                 exit(0);
             default:
-                exitFlag = 0;
-                bzero(bmsg, 255); //vynulujem buffer
-                //chScRErr(read(sockfd, buffer, 255));
-                n = recv(sockfd,bmsg,255,MSG_WAITALL);
-                if(n < 0){
-                    perror("Receive option Error:");
-                }
-                printf("%s\n", bmsg); //vypisem spravu od serveru
                 exitFlag = 0;
                 //printf("here we go again\n");
         }
@@ -239,12 +238,16 @@ void fileMenuCli(int sockfd) {
                 trimNL(buffer2,sizeof (buffer2));
                 exitFlag = 1;
                 sendFileClie(buffer,sockfd,buffer2);
+                loggedMenuCli(sockfd);
                 break;
             case 2:
+                exitFlag = 1;
                 rcvFileCli(sockfd);
+                loggedMenuCli(sockfd);
                 break;
             case 3:
                 exitFlag = 1;
+                loggedMenuCli(sockfd);
                 break;
             default:
                 /*bzero(buffer, 256); //vynulujem buffer

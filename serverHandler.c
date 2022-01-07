@@ -106,31 +106,40 @@ void loggedMenuServ(int newsockfd) {
         option = atoi(buffer);
         switch (option) {
             case 0:
-                sendFileServ(newsockfd);
+                sendFileServ(newsockfd,username);
+                exitFlag = 1;
                 break;
             case 1:
                 deleteUser(username);
                 welcomeServ(newsockfd);
+                exitFlag = 1;
                 break;
             case 2:
+                exitFlag = 1;
                 welcomeServ(newsockfd);
                 break;
             case 3:
+                exitFlag = 1;
                 addFriend(newsockfd, username);
                 break;
             case 4:
+                exitFlag = 1;
                 removeFriend(newsockfd, username);
                 break;
             case 5:
+                exitFlag = 1;
                 msgMenuServ(newsockfd, username);
                 break;
             case 6:
+                exitFlag = 1;
                 fileMenuServ(newsockfd);
                 break;
             case 7:
+                exitFlag = 1;
                 groupMenuServ(newsockfd, username);
                 break;
             case 8:
+                exitFlag = 1;
                 manageRequests(newsockfd, username);
                 break;
             case 9:
@@ -191,7 +200,7 @@ void msgMenuServ(int newsockfd, char *username) {
 }
 
 void fileMenuServ(int newsockfd) {
-    char buffer[255];
+    char buffer[10];
     int exitFlag = 0;
     int option;
     char *msg;
@@ -208,13 +217,18 @@ void fileMenuServ(int newsockfd) {
         option = atoi(buffer);
         switch (option) {
             case 1:
+                exitFlag = 1;
                 rcvFileServ(newsockfd);
+                loggedMenuServ(newsockfd);
                 break;
             case 2:
-                sendFileServ(newsockfd);
+                exitFlag = 1;
+                sendFileServ(newsockfd,username);
+                loggedMenuServ(newsockfd);
                 break;
             case 3:
                 exitFlag = 1;
+                loggedMenuServ(newsockfd);
                 break;
 
             default:

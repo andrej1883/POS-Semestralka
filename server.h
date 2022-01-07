@@ -11,7 +11,7 @@ void registerUser(int newsockfd);
 void deleteUser(char* name);
 void rcvFileServ(int newsockfd);
 
-void sendFileServ(int newsockfd);
+void sendFileServ(int newsockfd, char* current);
 
 int server(int argc, char *argv[]);
 
