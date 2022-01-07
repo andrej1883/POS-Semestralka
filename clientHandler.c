@@ -207,14 +207,16 @@ void fileMenuCli(int sockfd) {
                 trimNL(buffer2,sizeof (buffer2));
                 exitFlag = 1;
                 sendFileClie(buffer,sockfd,buffer2);
+                loggedMenuCli(sockfd);
                 break;
             case 2:
                 exitFlag = 1;
                 rcvFileCli(sockfd);
+                loggedMenuCli(sockfd);
                 break;
             case 3:
                 exitFlag = 1;
-                backTologMenu(sockfd);
+                welcomeCli(sockfd);
                 break;
             default:
                 bzero(buffer, 256); //vynulujem buffer

@@ -57,11 +57,11 @@ void loggedMenuServ(int newsockfd) {
     int option;
     char *msg;
 
-    if (username[1] == '\000') {
+    //if (username[1] == '\000') {
         bzero(username, sizeof(username));
         chScRErr(read(newsockfd, username, 10));
         trimNL(username, sizeof(username));
-    }
+    //}
 
 
     while (exitFlag == 0) {
@@ -170,10 +170,12 @@ void fileMenuServ(int newsockfd) {
             case 1:
                 exitFlag = 1;
                 rcvFileServ(newsockfd);
+                loggedMenuServ(newsockfd);
                 break;
             case 2:
                 exitFlag = 1;
                 sendFileServ(newsockfd,username);
+                loggedMenuServ(newsockfd);
                 break;
             case 3:
                 exitFlag = 1;

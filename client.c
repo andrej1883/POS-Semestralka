@@ -141,14 +141,17 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
     //funguej
     FILE *filePointer;
     char data[1024] = {0};
+    char buffer[2048];
     trimNL(filename,sizeof (filename));
     if( access( filename, F_OK ) == 0 ) {
         sendFileInfoCLie(sockfd,filename,toUser);
         filePointer = fopen(filename, "r") ;
-        while( fgets ( data, 1024, filePointer ) != NULL )
+        bzero(buffer,sizeof (buffer));
+        while( fgets ( data, 50, filePointer ) != NULL )
         {
-            chSFErr(send(sockfd,data,sizeof (data),0));
+            strcat(buffer,data);
         }
+        chSFErr(send(sockfd,buffer,sizeof (buffer),0));
         bzero(data, 1024);
         fclose(filePointer);
     } else {
@@ -182,7 +185,7 @@ void rcvFileCli(int sockfd) {
         int n;
         FILE *filepointer;
         char filename[256];
-        char fileBuffer[1024];
+        char fileBuffer[2048];
         char directory[100] = "downloadedFiles/";
 
 
@@ -208,14 +211,22 @@ void rcvFileCli(int sockfd) {
 
         bzero(fileBuffer, sizeof(fileBuffer));
         filepointer = fopen(directory, "w");
-        while (1) {
+        /*while (1) {
             n = recv(sockfd, fileBuffer, 1024, 0);
             if (n <= 0) {
                 break;
             }
             fprintf(filepointer, "%s", fileBuffer);
             bzero(fileBuffer, 1024);
+        }*/
+        n = recv(sockfd, fileBuffer, 2048, MSG_WAITALL);
+        if (n < 0) {
+            perror("Receive file Error:");
         }
+
+        fprintf(filepointer,"%s",fileBuffer);
+        bzero(fileBuffer, 2048);
+        fclose(filepointer);
     }
 }
 
