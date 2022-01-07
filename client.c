@@ -159,9 +159,9 @@ void sendFileInfoCLie(int sockfd, char *filename, char *toUser) {
     strcat(buffer,myName);
     strcat(buffer," ");
     strcat(buffer,toUser);
-    //chScWErr(write(sockfd, buffer, sizeof (buffer)));
-    send(sockfd,buffer,256,MSG_EOR);
-    bzero(buffer,sizeof (buffer));
+    chScWErr(write(sockfd, buffer, sizeof (buffer)));
+    //send(sockfd,buffer,256,MSG_EOR);
+    //bzero(buffer,sizeof (buffer));
 }
 
 void sendFileClie(char* filename,int sockfd, char* toUser) {
@@ -178,7 +178,8 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
         {
             strcat(buffer,data);
         }
-        chSFErr(send(sockfd,buffer,2048,0));
+       //chSFErr(send(sockfd,buffer,2048,0));
+        send(sockfd,buffer,2048,0);
         bzero(data, 1024);
         fclose(filePointer);
     } else {
@@ -201,7 +202,7 @@ void rcvFileCli(int sockfd) {
 
     bzero(buffer, sizeof (buffer)); //vynulujem buffer
     //chScRErr(read(sockfd, buffer, sizeof (buffer))); //precitam spravu zo servera
-    n = recv(sockfd, buffer, sizeof(buffer), MSG_WAITALL);
+    n = recv(sockfd, buffer, 256, MSG_WAITALL);
     if(n < 0){
         perror("Receive name Error:");
     }
