@@ -76,23 +76,23 @@ void loggedMenuServ(int newsockfd) {
     char *msg;
     int n;
 
-    /*if (username[1] == '\000') {
+    //if (username[1] == '\000') {
         bzero(username, sizeof(username));
         //chScRErr(read(newsockfd, username, 10));
-        n = recv(newsockfd,buffer,10,MSG_WAITALL);
+        n = recv(newsockfd,username,10,MSG_WAITALL);
         if(n < 0){
             perror("Receive option Error:");
         }
         trimNL(username, sizeof(username));
-    }*/
+    //}
 
-    bzero(username, sizeof(username));
+    /*bzero(username, sizeof(username));
     //chScRErr(read(newsockfd, username, 10));
     n = recv(newsockfd,username,10,MSG_WAITALL);
     if(n < 0){
         perror("Receive option Error:");
     }
-    trimNL(username, sizeof(username));
+    trimNL(username, sizeof(username));*/
 
 
     while (exitFlag == 0) {
@@ -207,9 +207,9 @@ void fileMenuServ(int newsockfd) {
     int n;
 
     while (exitFlag == 0) {
-        bzero(buffer, 255); //vynulujem buffer
+        bzero(buffer, 10); //vynulujem buffer
         //chScRErr(read(newsockfd, buffer, 10));
-        n = recv(newsockfd,buffer,255,MSG_WAITALL);
+        n = recv(newsockfd,buffer,10,MSG_WAITALL);
         if(n < 0){
             perror("Receive option Error:");
         }

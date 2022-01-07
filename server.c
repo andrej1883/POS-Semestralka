@@ -404,7 +404,7 @@ void registerUser(int newsockfd) {
 
     bzero(buffer, 255); //vynulujem buffer
     //chScRErr(read(newsockfd, buffer, 10));
-    n = recv(newsockfd,buffer,255,MSG_WAITALL);
+    n = recv(newsockfd,buffer,10,MSG_WAITALL);
     if(n < 0){
         perror("Receive option Error:");
     }
@@ -414,7 +414,7 @@ void registerUser(int newsockfd) {
 
     bzero(buffer, 255); //vynulujem buffer
     //chScRErr(read(newsockfd, buffer, 10));
-    n = recv(newsockfd,buffer,255,MSG_WAITALL);
+    n = recv(newsockfd,buffer,10,MSG_WAITALL);
     if(n < 0){
         perror("Receive option Error:");
     }
@@ -816,6 +816,9 @@ void manageRequests(int newsockfd, char *username) {
             chScRErr(read(newsockfd, buffer, 256));
         }
     }
+    bzero(buffer, 256);
+    strcpy(buffer, "All doner\n");
+    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
     loggedMenuServ(newsockfd);
 }
