@@ -7,10 +7,10 @@
 
 void welcomeServ(int newsockfd);
 void loggedMenuServ(int newsockfd);
-void msgMenuServ(int newsockfd, char *username);
+void msgMenuServ(int newsockfd);
 
 void fileMenuServ(int newsockfd);
 
-void groupMenuServ(int newsockfd, char *username);
+void groupMenuServ(int newsockfd);
 
 #endif //CHAT_SERVERHANDLER_H

@@ -12,8 +12,9 @@
 #include "errors.h"
 #include "server.h"
 
-char username[10];
+//char username[10];
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 void welcomeServ(int newsockfd) {
     char buffer[10];
@@ -24,7 +25,7 @@ void welcomeServ(int newsockfd) {
 
     //chScACErr(newsockfd = accept(pnewsockfd, (struct sockaddr *) &cli_addr,&cli_len));
 
-    bzero(username, sizeof(username));
+    //bzero(username, sizeof(username));
 
     while (exitFlag == 0) {
 
@@ -79,13 +80,19 @@ void loggedMenuServ(int newsockfd) {
     int n;
 
     //if (username[1] == '\000') {
-        bzero(username, sizeof(username));
-        //chScRErr(read(newsockfd, username, 10));
-        n = recv(newsockfd,username,10,MSG_WAITALL);
+    //bzero(username, sizeof(username));
+    //chScRErr(read(newsockfd, username, 10));
+    bzero(buffer, sizeof(buffer));
+    n = recv(newsockfd,buffer,10,MSG_WAITALL);
         if(n < 0){
             perror("Receive option Error:");
         }
-        trimNL(username, sizeof(username));
+        trimNL(buffer, sizeof(buffer));
+
+    pthread_mutex_lock(&mutex);
+    setUsername(buffer,newsockfd);
+    pthread_mutex_unlock(&mutex);
+
     //}
 
     /*bzero(username, sizeof(username));
@@ -108,11 +115,11 @@ void loggedMenuServ(int newsockfd) {
         option = atoi(buffer);
         switch (option) {
             case 0:
-                sendFileServ(newsockfd,username);
+                sendFileServ(newsockfd,getUsername(newsockfd));
                 exitFlag = 1;
                 break;
             case 1:
-                deleteUser(username);
+                deleteUser(getUsername(newsockfd));
                 welcomeServ(newsockfd);
                 exitFlag = 1;
                 break;
@@ -122,15 +129,15 @@ void loggedMenuServ(int newsockfd) {
                 break;
             case 3:
                 exitFlag = 1;
-                addFriend(newsockfd, username);
+                addFriend(newsockfd, getUsername(newsockfd));
                 break;
             case 4:
                 exitFlag = 1;
-                removeFriend(newsockfd, username);
+                removeFriend(newsockfd, getUsername(newsockfd));
                 break;
             case 5:
                 exitFlag = 1;
-                msgMenuServ(newsockfd, username);
+                msgMenuServ(newsockfd);
                 break;
             case 6:
                 exitFlag = 1;
@@ -138,11 +145,11 @@ void loggedMenuServ(int newsockfd) {
                 break;
             case 7:
                 exitFlag = 1;
-                groupMenuServ(newsockfd, username);
+                groupMenuServ(newsockfd);
                 break;
             case 8:
                 exitFlag = 1;
-                manageRequests(newsockfd, username);
+                manageRequests(newsockfd, getUsername(newsockfd));
                 break;
             case 9:
                 msg = "See you soon :)\n";
@@ -168,7 +175,7 @@ void loggedMenuServ(int newsockfd) {
     }
 }
 
-void msgMenuServ(int newsockfd, char *username) {
+void msgMenuServ(int newsockfd) {
     char buffer[10];
     int exitFlag = 0;
     int option;
@@ -182,11 +189,11 @@ void msgMenuServ(int newsockfd, char *username) {
         switch (option) {
             case 1:
                 exitFlag = 1;
-                sendMessage(newsockfd, username);
+                sendMessage(newsockfd, getUsername(newsockfd));
                 break;
             case 2:
                 exitFlag = 1;
-                readMessages(newsockfd, username);
+                readMessages(newsockfd, getUsername(newsockfd));
                 break;
             case 3:
                 exitFlag = 1;
@@ -225,7 +232,7 @@ void fileMenuServ(int newsockfd) {
                 break;
             case 2:
                 exitFlag = 1;
-                sendFileServ(newsockfd,username);
+                sendFileServ(newsockfd,getUsername(newsockfd));
                 loggedMenuServ(newsockfd);
                 break;
             case 3:
@@ -246,7 +253,7 @@ void fileMenuServ(int newsockfd) {
     }
 }
 
-void groupMenuServ(int newsockfd, char *username) {
+void groupMenuServ(int newsockfd) {
     char buffer[10];
     int exitFlag = 0;
     int option;
@@ -260,23 +267,23 @@ void groupMenuServ(int newsockfd, char *username) {
         switch (option) {
             case 1:
                 exitFlag = 1;
-                createGroup(newsockfd, username);
+                createGroup(newsockfd, getUsername(newsockfd));
                 break;
             case 2:
                 exitFlag = 1;
-                addMember(newsockfd, username);
+                addMember(newsockfd, getUsername(newsockfd));
                 break;
             case 3:
                 exitFlag = 1;
-                removeMember(newsockfd, username);
+                removeMember(newsockfd, getUsername(newsockfd));
                 break;
             case 4:
                 exitFlag = 1;
-                sendGroupMessage(newsockfd, username);
+                sendGroupMessage(newsockfd, getUsername(newsockfd));
                 break;
             case 5:
                 exitFlag = 1;
-                getGroupMessages(newsockfd, username);
+                getGroupMessages(newsockfd, getUsername(newsockfd));
                 break;
 
             case 6:

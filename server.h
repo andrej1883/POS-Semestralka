@@ -35,4 +35,7 @@ void removeMember(int newsockfd, char *membersName);
 void sendGroupMessage(int newsockfd, char* userName);
 void getGroupMessages(int newsockfd, char* username);
 
+void setUsername(char* username, int sockfd);
+char* getUsername(int sockfd);
+
 #endif //SOCKETY_SERVER_H
