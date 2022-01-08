@@ -133,7 +133,7 @@ void addFriend(int newsockfd, char *username) {
      * user zvoli ktoreho si chce pridat
      * tomu sa posle request
      * */
-    friend* userList[999];
+    /*friend* userList[999];
     int numOfusers = 0;
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) != 0 ) {
@@ -165,18 +165,18 @@ void addFriend(int newsockfd, char *username) {
             strcpy(nonFriends[numOfNonFrd]->fUsername, userList[i]->fUsername);
             numOfNonFrd++;
         }
-    }
+    }*/
 
     char buffer[256];
     bzero(buffer, 256);
     strcpy(buffer, "Here is list of users you aren't friends with: \n");
-    for (int i = 1; i < numOfNonFrd; ++i) {
+    for (int i = 0; i < numberUsers; ++i) {
         int val = i;
         char sid[3];
         sprintf(sid, "%i", val);
         strcat(buffer, sid);
         strcat(buffer, ". ");
-        strcat(buffer, nonFriends[i]->fUsername);
+        strcat(buffer, users[i]->username);
         strcat(buffer, "\n");
     }
     chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
