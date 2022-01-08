@@ -133,11 +133,13 @@ void addFriend(int newsockfd, char *username) {
      * user zvoli ktoreho si chce pridat
      * tomu sa posle request
      * */
-    /*friend* userList[999];
+    friend* userList[999];
     int numOfusers = 0;
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) != 0 ) {
-            strcpy(userList[numOfusers]->fUsername, users[i]->username);
+            friend *helperFriend = (friend *) malloc(sizeof(friend));
+            strcpy(helperFriend->fUsername, users[i]->username);
+            userList[numOfusers]=helperFriend;
             numOfusers++;
         }
     }
@@ -150,7 +152,7 @@ void addFriend(int newsockfd, char *username) {
         }
     }
 
-    friend* nonFriends[numOfusers];
+    friend* nonFriends[numOfusers+1];
     int numOfNonFrd = 1;
     int decision = 0;
 
@@ -162,21 +164,23 @@ void addFriend(int newsockfd, char *username) {
             }
         }
         if (decision == 1 ) {
-            strcpy(nonFriends[numOfNonFrd]->fUsername, userList[i]->fUsername);
+            friend *helperFriend = (friend *) malloc(sizeof(friend));
+            strcpy(helperFriend->fUsername, userList[i]->fUsername);
+            nonFriends[numOfNonFrd] = helperFriend;
             numOfNonFrd++;
         }
-    }*/
+    }
 
     char buffer[256];
     bzero(buffer, 256);
     strcpy(buffer, "Here is list of users you aren't friends with: \n");
-    for (int i = 0; i < numberUsers; ++i) {
+    for (int i = 1; i < numOfNonFrd; ++i) {
         int val = i;
         char sid[3];
         sprintf(sid, "%i", val);
         strcat(buffer, sid);
         strcat(buffer, ". ");
-        strcat(buffer, users[i]->username);
+        strcat(buffer, nonFriends[i]->fUsername);
         strcat(buffer, "\n");
     }
     chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
@@ -188,7 +192,7 @@ void addFriend(int newsockfd, char *username) {
     sscanf(buffer, "%d", &test);
     if ((test >= 0)) {
         pthread_mutex_lock(&mutex);
-        sendRequest(username, users[test]->username);
+        sendRequest(username, nonFriends[test]->fUsername);
         pthread_mutex_unlock(&mutex);
 
     }
