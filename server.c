@@ -765,10 +765,9 @@ int server(int argc, char *argv[]) {
 
 
     while(1){
-        printf("to1 \n");
+
         Client[clientCount].sockID = accept(sockfd, (struct sockaddr*) &Client[clientCount].clientAddr, &Client[clientCount].len);
         Client[clientCount].index = clientCount;
-        printf("to2 \n");
         pthread_create(&thread[clientCount], NULL, doNetworking, (void *) &Client[clientCount]);
 
         clientCount ++;
@@ -873,6 +872,7 @@ void manageRequests(int newsockfd, char *username) {
         int chosenReq;
         sscanf(buffer, "%d", &chosenReq);
         if ((chosenReq >= 0) && (chosenReq < managingUser->numReq)) {
+
             bzero(buffer, 256);
             strcpy(buffer, "Do you wish to accept this request? \n(Y - Yes/N -NO ) \n");
             chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
@@ -889,7 +889,7 @@ void manageRequests(int newsockfd, char *username) {
                 managingUser->numReq--;
 
                 for (int i = 0; i < managingUser->numReq; ++i) {
-                    if (i > chosenReq) {
+                    if (i >= chosenReq) {
                         fRequest *newRequest = (fRequest *) malloc(sizeof(fRequest));
                         strcpy(newRequest->fromUser, managingUser->requests[i + 1]->fromUser);
                         strcpy(newRequest->toUser, managingUser->requests[i + 1]->toUser);
@@ -904,7 +904,7 @@ void manageRequests(int newsockfd, char *username) {
 
                     pthread_mutex_lock(&mutex);
                     for (int i = 0; i < managingUser->numReq; ++i) {
-                        if (i > chosenReq) {
+                        if (i >= chosenReq) {
                             fRequest *newRequest = (fRequest *) malloc(sizeof(fRequest));
                             strcpy(newRequest->fromUser, managingUser->requests[i + 1]->fromUser);
                             strcpy(newRequest->toUser, managingUser->requests[i + 1]->toUser);
