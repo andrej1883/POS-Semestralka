@@ -397,7 +397,7 @@ void addMessage(char *toUserName, char *text, char *fromUserName) {
             //if (users[i]->username == toUser->username) {
             users[i]->messages[users[i]->numMsg] = newMessage;
             users[i]->numMsg++;
-            return;
+            break;
         }
     }
     pthread_mutex_unlock(&mutex);
@@ -738,8 +738,8 @@ int server(int argc, char *argv[]) {
            5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
     cli_len = sizeof(cli_addr);
 
-    chScACErr(newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr,
-                                 &cli_len)); //blokujuce systemove volanie, ked sa niekto pripoji, vrati novy socket na komunikaciu s pripojenym klientom
+    //chScACErr(newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr,
+    //                             &cli_len)); //blokujuce systemove volanie, ked sa niekto pripoji, vrati novy socket na komunikaciu s pripojenym klientom
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
@@ -765,10 +765,10 @@ int server(int argc, char *argv[]) {
 
 
     while(1){
-
+        printf("to1 \n");
         Client[clientCount].sockID = accept(sockfd, (struct sockaddr*) &Client[clientCount].clientAddr, &Client[clientCount].len);
         Client[clientCount].index = clientCount;
-
+        printf("to2 \n");
         pthread_create(&thread[clientCount], NULL, doNetworking, (void *) &Client[clientCount]);
 
         clientCount ++;
@@ -1110,7 +1110,7 @@ void readMessages(int newsockfd, char *username) {
     char buffer[256];
     int n;
     user *managingUser = (user *) malloc(sizeof(user));
-    //pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex);
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) == 0) {
             managingUser = users[i];
