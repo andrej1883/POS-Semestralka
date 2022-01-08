@@ -133,6 +133,14 @@ void addFriend(int newsockfd, char *username) {
      * user zvoli ktoreho si chce pridat
      * tomu sa posle request
      * */
+    friend* userList[999];
+    int numOfusers = 0;
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, username) != 0 ) {
+            strcpy(userList[numOfusers]->fUsername, users[i]->username);
+            numOfusers++;
+        }
+    }
 
 
     user *client = (user *) malloc(sizeof(user));
@@ -141,16 +149,34 @@ void addFriend(int newsockfd, char *username) {
             client = users[i];
         }
     }
+
+    friend* nonFriends[numOfusers];
+    int numOfNonFrd = 1;
+    int decision = 0;
+
+    for (int i = 0; i < numOfusers; ++i) {
+        decision = 1;
+        for (int j = 0; j < client->numFrd; ++j) {
+            if (strcmp(userList[i]->fUsername, client->friendlist[j]->fUsername) == 0) {
+                decision = 0;
+            }
+        }
+        if (decision == 1 ) {
+            strcpy(nonFriends[numOfNonFrd]->fUsername, userList[i]->fUsername);
+            numOfNonFrd++;
+        }
+    }
+
     char buffer[256];
     bzero(buffer, 256);
-    strcpy(buffer, "Here is list of all users: \n");
-    for (int i = 0; i < numberUsers; ++i) {
+    strcpy(buffer, "Here is list of users you aren't friends with: \n");
+    for (int i = 1; i < numOfNonFrd; ++i) {
         int val = i;
         char sid[3];
         sprintf(sid, "%i", val);
         strcat(buffer, sid);
         strcat(buffer, ". ");
-        strcat(buffer, users[i]->username);
+        strcat(buffer, nonFriends[i]->fUsername);
         strcat(buffer, "\n");
     }
     chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
