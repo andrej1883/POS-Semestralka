@@ -7,11 +7,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/socket.h>
+#include <pthread.h>
 #include "serverHandler.h"
 #include "errors.h"
 #include "server.h"
 
 char username[10];
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void welcomeServ(int newsockfd) {
     char buffer[10];

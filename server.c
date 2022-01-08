@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <pthread.h>
 #include "errors.h"
 #include "serverHandler.h"
 #include "server.h"
@@ -62,6 +63,42 @@ int numberChats = 0;
 int numberUsers = 0;
 int fileIdS = 0;
 int filesCount = 0;
+
+int clientCount = 0;
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+struct client{
+
+    int index;
+    int sockID;
+    struct sockaddr_in clientAddr;
+    int len;
+    user *clientUser;
+
+};
+
+struct client Client[1024];
+pthread_t thread[1024];
+
+void * doNetworking(void * ClientDetail){
+
+    struct client* clientDetail = (struct client*) ClientDetail;
+    int index = clientDetail -> index;
+    int clientSocket = clientDetail -> sockID;
+
+    printf("Client %d connected.\n",index + 1);
+
+    while(1){
+        //pthread_mutex_lock(&mutex);
+        welcomeServ(clientSocket);
+        //pthread_mutex_unlock(&mutex);
+    }
+
+    return NULL;
+
+}
 
 void trimNL(char *arr, int length) {
     for (int i = 0; i < length; ++i) {
@@ -688,8 +725,28 @@ int server(int argc, char *argv[]) {
     //getFileInfoServ(newsockfd);
 
 
+    while(1){
 
-    welcomeServ(newsockfd);
+        Client[clientCount].sockID = accept(sockfd, (struct sockaddr*) &Client[clientCount].clientAddr, &Client[clientCount].len);
+        Client[clientCount].index = clientCount;
+
+        pthread_create(&thread[clientCount], NULL, doNetworking, (void *) &Client[clientCount]);
+
+        clientCount ++;
+
+    }
+
+    for(int i = 0 ; i < clientCount ; i ++)
+        pthread_join(thread[i],NULL);
+
+
+
+
+
+
+
+
+    //welcomeServ(newsockfd);
     //sendFileServ(newsockfd);
     exit(0);
 

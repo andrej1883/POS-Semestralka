@@ -8,12 +8,25 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <pthread.h>
 #include "errors.h"
 #include "clientHandler.h"
 #include "client.h"
 #include "server.h"
 
 char myName[10];
+
+void * doRecieving(void * sockID){
+
+    int clientSocket = *((int *) sockID);
+
+    while(1){
+
+        welcomeCli(clientSocket);
+
+    }
+
+}
 
 void authClie(int sockfd) {
     char buffer[256];
@@ -324,6 +337,19 @@ int client(int argc, char *argv[])
 
     welcomeCli(sockfd);
     //rcvFileCli(sockfd);
+
+  /*  pthread_t thread;
+    int clientSocket = *((int *) &sockfd);
+    pthread_create(&thread, NULL, doRecieving, (void *) &sockfd );*/
+
+
+
+
+
+
+
+
+
     exit(0);
 
     for (;;) {
