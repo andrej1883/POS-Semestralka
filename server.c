@@ -146,7 +146,7 @@ void addFriend(int newsockfd, char *username) {
      * user zvoli ktoreho si chce pridat
      * tomu sa posle request
      * */
-    friend *userList[999];
+    friend *userList[999] = {0};
     int numOfusers = 0;
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) != 0) {
@@ -158,7 +158,7 @@ void addFriend(int newsockfd, char *username) {
     }
 
 
-    user *client = (user *) malloc(sizeof(user));
+    user *client ;//= (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) == 0) {
             client = users[i];
@@ -235,8 +235,6 @@ void addFriend(int newsockfd, char *username) {
         //const char *msg = "Friend request sent!";
         chScWErr(write(newsockfd, buffer, MSGBUFFSIZE));
     }
-
-
     loggedMenuServ(newsockfd);
 }
 
@@ -430,7 +428,7 @@ void updateFileLogSave() {
 }
 
 void addMessage(char *toUserName, char *text, char *fromUserName) {
-    user *toUser = (user *) malloc(sizeof(user));
+    user *toUser ;//= (user *) malloc(sizeof(user));
 
     pthread_mutex_lock(&mutex);
 
@@ -440,7 +438,7 @@ void addMessage(char *toUserName, char *text, char *fromUserName) {
         }
     }
 
-    user *fromUser = (user *) malloc(sizeof(user));
+    user *fromUser ;//= (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, fromUserName) == 0) {
             fromUser = users[i];
@@ -467,7 +465,7 @@ void addMessage(char *toUserName, char *text, char *fromUserName) {
 
 void getMessagesFrom(int newsockfd, char *msgOfUser, char *msgFromUser) {
     char buffer[MSGBUFFSIZE];
-    user *newUser = (user *) malloc(sizeof(user));
+    user *newUser ;//= (user *) malloc(sizeof(user));
 
     pthread_mutex_lock(&mutex);
 
@@ -476,7 +474,7 @@ void getMessagesFrom(int newsockfd, char *msgOfUser, char *msgFromUser) {
             newUser = users[i];
         }
     }
-    user *senderUser = (user *) malloc(sizeof(user));
+    user *senderUser;// = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, msgFromUser) == 0) {
             senderUser = users[i];
@@ -562,6 +560,7 @@ void deleteUser(char *name) {
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, name) == 0) {
             printf("User %s deleted\n", users[i]->username);
+            //free(users[i]);
             users[i] = NULL;
             for (int j = i; j < numberUsers - 1; ++j) {
                 users[j] = users[j + 1];
@@ -578,7 +577,7 @@ void sendFileServ(int newsockfd, char *current) {
     char loaded[10];
 
     //creating temporary fileList
-    fileInfo *temporary[9999];
+    fileInfo *temporary[9999] = {0};
     pthread_mutex_lock(&mutex);
     int found = 0;
     for (int i = 0; i < filesCount; ++i) {
@@ -815,7 +814,7 @@ void manageRequests(int newsockfd, char *username) {
      * */
 
     char buffer[MSGBUFFSIZE];
-    user *managingUser = (user *) malloc(sizeof(user));
+    user *managingUser; // = (user *) malloc(sizeof(user));
     pthread_mutex_lock(&mutex);
 
     for (int i = 0; i < numberUsers; ++i) {
@@ -877,10 +876,13 @@ void manageRequests(int newsockfd, char *username) {
 
                 for (int i = 0; i < managingUser->numReq; ++i) {
                     if (i >= chosenReq) {
+                        managingUser->requests[i] = NULL;
                         fRequest *newRequest = (fRequest *) malloc(sizeof(fRequest));
                         strcpy(newRequest->fromUser, managingUser->requests[i + 1]->fromUser);
                         strcpy(newRequest->toUser, managingUser->requests[i + 1]->toUser);
                         managingUser->requests[i] = newRequest;
+                        if (i == managingUser->numReq) {
+                            managingUser->requests[i+1] = NULL;}
                     }
                 }
                 pthread_mutex_unlock(&mutex);
@@ -892,10 +894,13 @@ void manageRequests(int newsockfd, char *username) {
                     pthread_mutex_lock(&mutex);
                     for (int i = 0; i < managingUser->numReq; ++i) {
                         if (i >= chosenReq) {
+                            managingUser->requests[i] = NULL;
                             fRequest *newRequest = (fRequest *) malloc(sizeof(fRequest));
                             strcpy(newRequest->fromUser, managingUser->requests[i + 1]->fromUser);
                             strcpy(newRequest->toUser, managingUser->requests[i + 1]->toUser);
                             managingUser->requests[i] = newRequest;
+                            if (i == managingUser->numReq) {
+                                managingUser->requests[i+1] = NULL;}
                         }
                     }
                     pthread_mutex_unlock(&mutex);
@@ -924,7 +929,7 @@ void removeFriend(int newsockfd, char *username) {
      * toto priatelstvo sa zrusi
      * */
     char buffer[MSGBUFFSIZE];
-    user *managingUser = (user *) malloc(sizeof(user));
+    user *managingUser;// = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) == 0) {
             managingUser = users[i];
@@ -955,7 +960,7 @@ void removeFriend(int newsockfd, char *username) {
         if ((chosenFrd >=0) && (chosenFrd < managingUser->numFrd)) {
 
             pthread_mutex_lock(&mutex);
-            user *removedFriend = (user *) malloc(sizeof(user));
+            user *removedFriend;// = (user *) malloc(sizeof(user));
             for (int i = 0; i < numberUsers; ++i) {
                 if (strcmp(users[i]->username, managingUser->friendlist[chosenFrd]->fUsername) == 0) {
                     removedFriend = users[i];
@@ -965,9 +970,13 @@ void removeFriend(int newsockfd, char *username) {
             managingUser->numFrd--;
             for (int i = 0; i < managingUser->numFrd; ++i) {
                 if (i > chosenFrd) {
+                    managingUser->friendlist[i] = NULL;
                     friend *newFriend = (friend *) malloc(sizeof(friend));
                     strcpy(newFriend->fUsername, managingUser->friendlist[i + 1]->fUsername);
                     managingUser->friendlist[i] = newFriend;
+                    if (i == managingUser->numFrd) {
+                        managingUser->friendlist[i] = NULL;
+                    }
                 }
             }
 
@@ -982,9 +991,13 @@ void removeFriend(int newsockfd, char *username) {
 
             for (int i = 0; i < removedFriend->numFrd; ++i) {
                 if (i > selected) {
+                    removedFriend->friendlist[i] = NULL;
                     friend *newFriend = (friend *) malloc(sizeof(friend));
                     strcpy(newFriend->fUsername, removedFriend->friendlist[i + 1]->fUsername);
                     removedFriend->friendlist[i] = newFriend;
+                    if (i == removedFriend->numFrd) {
+                        removedFriend->friendlist[i+1] = NULL;
+                    }
                 }
             }
             pthread_mutex_unlock(&mutex);
@@ -1020,7 +1033,7 @@ void sendMessage(int newsockfd, char *username) {
      * ulozi spravu prislusnemu kontaktu
      */
     char buffer[MSGBUFFSIZE];
-    user *managingUser = (user *) malloc(sizeof(user));
+    user *managingUser;// = (user *) malloc(sizeof(user));
     pthread_mutex_lock(&mutex);
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) == 0) {
@@ -1055,7 +1068,7 @@ void sendMessage(int newsockfd, char *username) {
 
         if ((chosenFrd >=0) && (chosenFrd < managingUser->numFrd)) {
 
-            user *textedFriend = (user *) malloc(sizeof(user));
+            user *textedFriend;// = (user *) malloc(sizeof(user));
 
             pthread_mutex_lock(&mutex);
             for (int i = 0; i < numberUsers; ++i) {
@@ -1116,7 +1129,7 @@ void sendMessage(int newsockfd, char *username) {
 void readMessages(int newsockfd, char *username) {
     char buffer[MSGBUFFSIZE];
     int n;
-    user *managingUser = (user *) malloc(sizeof(user));
+    user *managingUser ;//= (user *) malloc(sizeof(user));
     pthread_mutex_lock(&mutex);
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) == 0) {
@@ -1155,7 +1168,7 @@ void readMessages(int newsockfd, char *username) {
 
             pthread_mutex_lock(&mutex);
 
-            user *textedFriend = (user *) malloc(sizeof(user));
+            user *textedFriend;// = (user *) malloc(sizeof(user));
             for (int i = 0; i < numberUsers; ++i) {
                 if (strcmp(users[i]->username, managingUser->friendlist[chosenFrd]->fUsername) == 0) {
                     textedFriend = users[i];
@@ -1238,14 +1251,14 @@ void createGroup(int newsockfd, char *founderName) {
 
 void addMember(int newsockfd, char *membersName) {
 
-    user *managingUser = (user *) malloc(sizeof(user));
+    user *managingUser;// = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, membersName) == 0) {
             managingUser = users[i];
         }
     }
     pthread_mutex_lock(&mutex);
-    groupChat *group = (groupChat *) malloc(sizeof(groupChat));
+    groupChat *group ;//= (groupChat *) malloc(sizeof(groupChat));
     char buffer[MSGBUFFSIZE];
     bzero(buffer, MSGBUFFSIZE);
     if ((managingUser->numGroups) > 0) {
@@ -1278,7 +1291,7 @@ void addMember(int newsockfd, char *membersName) {
             pthread_mutex_unlock(&mutex);
             // Start of change
 
-            friend *userList[999];
+            friend *userList[999] ={0};
             int numOfusers = 1;
             for (int i = 0; i < numberUsers; ++i) {
                 if (strcmp(users[i]->username, membersName) != 0) {
@@ -1396,7 +1409,7 @@ void addMember(int newsockfd, char *membersName) {
 
 void removeMember(int newsockfd, char *membersName) {
 
-    user *managingUser = (user *) malloc(sizeof(user));
+    user *managingUser;// = (user *) malloc(sizeof(user));
     pthread_mutex_lock(&mutex);
 
     for (int i = 0; i < numberUsers; ++i) {
@@ -1406,7 +1419,7 @@ void removeMember(int newsockfd, char *membersName) {
     }
     pthread_mutex_unlock(&mutex);
 
-    groupChat *group = (groupChat *) malloc(sizeof(groupChat));
+    groupChat *group;// = (groupChat *) malloc(sizeof(groupChat));
     char buffer[MSGBUFFSIZE];
     bzero(buffer, MSGBUFFSIZE);
     if (managingUser->numGroups > 0) {
@@ -1450,6 +1463,9 @@ void removeMember(int newsockfd, char *membersName) {
             for (int i = 0; i < group->numMemb; ++i) {
                 if (i >= chosen) {
                     strcpy(group->members[i]->fUsername, group->members[i + 1]->fUsername);
+                    if (i ==  group->numMemb) {
+                        group->members[i + 1] = NULL;
+                    }
                 }
             }
 
@@ -1463,7 +1479,11 @@ void removeMember(int newsockfd, char *membersName) {
 
             for (int i = 0; i < managingUser->numGroups; ++i) {
                 if (i >= chosengr) {
+                    managingUser->groupChats[i] = NULL;
                     managingUser->groupChats[i] = managingUser->groupChats[i + 1];
+                    if (i ==  managingUser->numGroups) {
+                        managingUser->groupChats[i + 1] = NULL;
+                    }
                 }
             }
             pthread_mutex_unlock(&mutex);
@@ -1497,14 +1517,14 @@ void removeMember(int newsockfd, char *membersName) {
 
 void addGroupMessage(char *toGroupeName, char *text, char *fromUserName) {
     pthread_mutex_lock(&mutex);
-    groupChat *toGroup = (groupChat *) malloc(sizeof(groupChat));
+    groupChat *toGroup;// = (groupChat *) malloc(sizeof(groupChat));
     for (int i = 0; i < numberChats; ++i) {
         if (strcmp(groupChats[i]->chatName, toGroupeName) == 0) {
             toGroup = groupChats[i];
         }
     }
 
-    user *fromUser = (user *) malloc(sizeof(user));
+    user *fromUser ;//= (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, fromUserName) == 0) {
             fromUser = users[i];
@@ -1526,7 +1546,7 @@ void addGroupMessage(char *toGroupeName, char *text, char *fromUserName) {
 void sendGroupMessage(int newsockfd, char *userName) {
     char buffer[MSGBUFFSIZE];
     pthread_mutex_lock(&mutex);
-    user *managingUser = (user *) malloc(sizeof(user));
+    user *managingUser;// = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, userName) == 0) {
             managingUser = users[i];
@@ -1560,7 +1580,7 @@ void sendGroupMessage(int newsockfd, char *userName) {
         if ((chosenFrd >= 0) && (chosenFrd < managingUser->numGroups)) {
 
             pthread_mutex_lock(&mutex);
-            groupChat *textedGroup = (groupChat *) malloc(sizeof(groupChat));
+            groupChat *textedGroup;// = (groupChat *) malloc(sizeof(groupChat));
             for (int i = 0; i < numberChats; ++i) {
                 if (strcmp(groupChats[i]->chatName, managingUser->groupChats[chosenFrd]->chatName) == 0) {
                     textedGroup = groupChats[i];
@@ -1623,7 +1643,7 @@ void sendGroupMessage(int newsockfd, char *userName) {
 void getGroupMessages(int newsockfd, char *username) {
     char buffer[MSGBUFFSIZE];
     pthread_mutex_lock(&mutex);
-    user *managingUser = (user *) malloc(sizeof(user));
+    user *managingUser;// = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) == 0) {
             managingUser = users[i];
@@ -1656,7 +1676,7 @@ void getGroupMessages(int newsockfd, char *username) {
         if ((chosenFrd >= 0) && (chosenFrd < managingUser->numGroups)) {
 
             pthread_mutex_lock(&mutex);
-            groupChat *textedGroup = (groupChat *) malloc(sizeof(groupChat));
+            groupChat *textedGroup ;//= (groupChat *) malloc(sizeof(groupChat));
             for (int i = 0; i < numberChats; ++i) {
                 if (strcmp(groupChats[i]->chatName, managingUser->groupChats[chosenFrd]->chatName) == 0) {
                     textedGroup = groupChats[i];
