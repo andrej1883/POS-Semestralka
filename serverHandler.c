@@ -160,7 +160,7 @@ void msgMenuServ(int newsockfd) {
                 break;
             case 3:
                 exitFlag = 1;
-                //loggedMenuServ(newsockfd);
+                loggedMenuServ(newsockfd);
                 break;
 
             default:
@@ -199,7 +199,7 @@ void fileMenuServ(int newsockfd) {
                 break;
             case 3:
                 exitFlag = 1;
-                //loggedMenuServ(newsockfd);
+                loggedMenuServ(newsockfd);
                 break;
 
             default:
@@ -247,7 +247,7 @@ void groupMenuServ(int newsockfd) {
 
             case 6:
                 exitFlag = 1;
-                //loggedMenuServ(newsockfd);
+                loggedMenuServ(newsockfd);
                 break;
 
             default:

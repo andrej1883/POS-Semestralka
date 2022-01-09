@@ -174,7 +174,7 @@ void msgMenuCli(int sockfd) {
                 break;
             case 3:
                 exitFlag = 1;
-                //backTologMenu(sockfd);
+                backTologMenu(sockfd);
                 break;
             default:
                 bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
@@ -228,7 +228,7 @@ void fileMenuCli(int sockfd) {
                 break;
             case 3:
                 exitFlag = 1;
-                //loggedMenuCli(sockfd);
+                loggedMenuCli(sockfd);
                 break;
             default:
                 bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
@@ -286,7 +286,7 @@ void groupMenuCli(int sockfd) {
                 break;
             case 6:
                 exitFlag = 1;
-                //backTologMenu(sockfd);
+                backTologMenu(sockfd);
 
                 break;
             default:
