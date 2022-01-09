@@ -14,7 +14,10 @@
 #include "client.h"
 #include "server.h"
 
+#define MSGBUFFSIZE 256
+
 char myName[10];
+
 
 void * doRecieving(void * sockID){
 
@@ -29,27 +32,27 @@ void * doRecieving(void * sockID){
 }
 
 void authClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
     printf("Log into server: \n");
     printf("Please enter username: ");
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
     for (int i = 0; i < 10; ++i) {
         myName[i] = buffer[i];
     }
     trimNL(myName,sizeof (myName));
 
     printf("Please enter password: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     if(strcmp(buffer,"Login or password incorrect!") == 0) {
@@ -61,19 +64,19 @@ void authClie(int sockfd) {
 }
 
 void addFriendClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     //printf("Please enter number of user you wish to add: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     if(strcmp(buffer,"Friend request sent!") == 0) {
@@ -82,27 +85,27 @@ void addFriendClie(int sockfd) {
 }
 
 void getMessagesClie(int sockfd) { //read messages on server
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
     int n;
 
-    bzero(buffer, 256); //vynulujem buffer
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
     //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
 
-    n = recv(sockfd, buffer, 255, MSG_WAITALL);
+    n = recv(sockfd, buffer, MSGBUFFSIZE, MSG_WAITALL);
     if(n < 0){
         perror("Receive name Error:");
     }
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
     //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
-    send(sockfd,buffer,255,MSG_EOR);
+    send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
 
-    bzero(buffer, 256); //vynulujem buffer
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
     //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
 
-    n = recv(sockfd, buffer,255, MSG_WAITALL);
+    n = recv(sockfd, buffer,MSGBUFFSIZE, MSG_WAITALL);
     if(n < 0){
         perror("Receive name Error:");
     }
@@ -112,24 +115,24 @@ void getMessagesClie(int sockfd) { //read messages on server
 }
 
 void getMessagesFromClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 }
 
 void registerClie(int sockfd) {
-    char buffer[255];
+    char buffer[MSGBUFFSIZE];
     int n;
 
     printf("Create account: \n");
     printf("Please enter username: ");
 
-    bzero(buffer, 255); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
     //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
-    n = send(sockfd,buffer,10,MSG_EOR);
+    n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
     if(n < 0){
         perror("Send option Error:");
     }
@@ -139,18 +142,18 @@ void registerClie(int sockfd) {
     trimNL(myName,sizeof (myName));
 
     printf("Please enter password: ");
-    bzero(buffer, 255); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
     //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
-    n = send(sockfd,buffer,10,MSG_EOR);
+    n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
     if(n < 0){
         perror("Send option Error:");
     }
 
 
-    bzero(buffer, 255); //vynulujem buffer
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
     //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-    n = recv(sockfd,buffer,255,MSG_WAITALL);
+    n = recv(sockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
     if(n < 0){
         perror("Receive option Error:");
     }
@@ -164,15 +167,15 @@ void registerClie(int sockfd) {
 
 void sendFileInfoCLie(int sockfd, char *filename, char *toUser) {
     //funguje
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer,sizeof (buffer));
+    bzero(buffer,MSGBUFFSIZE);
     strcat(buffer,filename);
     strcat(buffer," ");
     strcat(buffer,myName);
     strcat(buffer," ");
     strcat(buffer,toUser);
-    chScWErr(write(sockfd, buffer, sizeof (buffer)));
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE));
     //send(sockfd,buffer,256,MSG_EOR);
     //bzero(buffer,sizeof (buffer));
 }
@@ -202,7 +205,7 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
 
 void rcvFileCli(int sockfd) {
     //send your name  to server
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
     int n;
 
     //strcpy(myName, "Pepa");
@@ -213,9 +216,9 @@ void rcvFileCli(int sockfd) {
     send(sockfd,buffer,10,MSG_EOR);*/
 
 
-    bzero(buffer, sizeof (buffer)); //vynulujem buffer
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
     //chScRErr(read(sockfd, buffer, sizeof (buffer))); //precitam spravu zo servera
-    n = recv(sockfd, buffer, 256, MSG_WAITALL);
+    n = recv(sockfd, buffer, MSGBUFFSIZE, MSG_WAITALL);
     if(n < 0){
         perror("Receive name Error:");
     }
@@ -224,10 +227,10 @@ void rcvFileCli(int sockfd) {
     if (strcmp(buffer, "There are no available files for you\n") != 0) {
 
         printf("Please enter number of file: ");
-        bzero(buffer, sizeof (buffer)); //vynulujem buffer
-        fgets(buffer, sizeof (buffer), stdin); //naplnim buffer
+        bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+        fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
         //chScWErr(write(sockfd, buffer, sizeof (buffer)));
-        send(sockfd,buffer,256,MSG_EOR);
+        send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
 
         int n;
         FILE *filepointer;
@@ -246,9 +249,9 @@ void rcvFileCli(int sockfd) {
             mkdir(directory, 0700);
         }
 
-        bzero(buffer, sizeof (buffer)); //vynulujem buffer
+        bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
         //chScRErr(read(sockfd, buffer,sizeof (buffer))); //precitam spravu zo servera
-        n = recv(sockfd, buffer, 20, MSG_WAITALL);
+        n = recv(sockfd, buffer, MSGBUFFSIZE, MSG_WAITALL);
         if(n < 0){
             perror("Receive name Error:");
         }
@@ -287,7 +290,7 @@ int client(int argc, char *argv[])
     struct sockaddr_in serv_addr;
     struct hostent* server; //uchovava informacie o serveri
 
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
     if (argc < 3)
     {
@@ -376,46 +379,46 @@ int client(int argc, char *argv[])
 }
 
 void manageRequestsClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     //printf("Please enter number of request: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     loggedMenuCli(sockfd);
 }
 
 void removeFriendClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     printf("Please enter number of friend: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
 
@@ -429,134 +432,134 @@ void backTologMenu(int sockfd) {
 }
 
 void sendMessageClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     //printf("Please enter number of user you wish to message: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     //printf("Please enter text: ");
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     loggedMenuCli(sockfd);
 }
 
 void addMemberClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     loggedMenuCli(sockfd);
 }
 
 void removeMemberClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     loggedMenuCli(sockfd);
 }
 
 void createGroupClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     loggedMenuCli(sockfd);
 }
 
 void sendGroupMessageClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     loggedMenuCli(sockfd);
 }
 
 void getGroupMessagesClie(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    bzero(buffer, 256); //vynulujem buffer
-    fgets(buffer, 255, stdin); //naplnim buffer
-    chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+    chScWErr(write(sockfd, buffer, MSGBUFFSIZE)); //zapisem buffer na server
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     loggedMenuCli(sockfd);
