@@ -45,7 +45,7 @@ void welcomeServ(int newsockfd) {
                 if(n < 0){
                     perror("Send option Error:");
                 }
-                return;
+                break;
 
             default:
                 printf("welcomeMenu cycle\n");

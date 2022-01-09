@@ -81,6 +81,14 @@ typedef struct {
 client *clients[1024];
 pthread_t thread[1024];
 
+int cligetID(int socktID) {
+    for (int i = 0; i < clientCount; ++i) {
+        if (clients[i]->sockID == socktID) {
+            return clients[i]->id;
+        }
+    }
+}
+
 void* handleConnection(void *connClientInfo) {
     client *new = (client *) connClientInfo;
     int id = new->id;
@@ -93,8 +101,8 @@ void* handleConnection(void *connClientInfo) {
     for (int i = 0; i < clientCount; ++i) {
         if (clients[i]->id == id) {
             printf("Client ID%d deleted from client list\n", id);
-            free(clients[i]);
-            for (int j = i; j < clientCount - 1; ++j) {
+            clients[i] = NULL;
+            for (int j = i; j < 1024 - 1; ++j) {
                 clients[j] = clients[j + 1];
             }
             clientCount--;
@@ -103,7 +111,7 @@ void* handleConnection(void *connClientInfo) {
     pthread_mutex_unlock(&mutex);
     close(clientSocket);
     printf("Client ID%d disconnected.\n", id);
-    pthread_join(thread[clientSocket], NULL);
+    pthread_join(thread[id], NULL);
     return NULL;
 }
 
@@ -118,7 +126,7 @@ void trimNL(char *arr, int length) {
 
 void setUsername(char *username, int sockfd) {
     for (int i = 0; i < clientCount; ++i) {
-        if (clients[i]->sockID == sockfd) {
+        if (clients[i]->id == cligetID(sockfd)) {
             strcpy(clients[i]->username, username);
         }
     }
@@ -126,7 +134,7 @@ void setUsername(char *username, int sockfd) {
 
 char *getUsername(int sockfd) {
     for (int i = 0; i < clientCount; ++i) {
-        if (clients[i]->sockID == sockfd) {
+        if (clients[i]->id == cligetID(sockfd)) {
             return clients[i]->username;
         }
     }
@@ -776,7 +784,7 @@ int server(int argc, char *argv[]) {
             pthread_mutex_unlock(&mutex);
             //clients[clientCount] = new;
 
-            pthread_create(&thread[new->sockID], NULL, handleConnection,(void *) new);
+            pthread_create(&thread[new->id], NULL, handleConnection,(void *) new);
 
             //clientCount++;
         }
