@@ -41,7 +41,9 @@ void authClie(int sockfd) {
 
     if(strcmp(buffer,"Login or password incorrect!") == 0) {
         welcomeCli(sockfd);
-    } else {
+    }
+
+    if(strcmp(buffer,"User sucesfully logged in") == 0) {
         loggedMenuCli(sockfd);
     }
 

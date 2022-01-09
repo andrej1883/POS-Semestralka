@@ -11,6 +11,9 @@
 #include "server.h"
 
 #define MSGBUFFSIZE 256
+#define NUMBERUSERS 1024
+#define NUMBERGROUPCHATS 1024
+#define USERNAMEPASSWDLEN 10
 
 typedef struct {
     char fromUser[10];
@@ -56,9 +59,9 @@ typedef struct {
     char fileName[MSGBUFFSIZE];
 } fileInfo;
 
-fileInfo *fileList[9999];
-user *users[10];
-groupChat *groupChats[10];
+fileInfo *fileList[NUMBERUSERS];
+user *users[NUMBERUSERS];
+groupChat *groupChats[NUMBERGROUPCHATS];
 int numberChats = 0;
 int numberUsers = 0;
 int fileIdS = 0;
@@ -75,11 +78,11 @@ typedef struct {
     int sockID;
     struct sockaddr_in clientAddr;
     unsigned int len;
-    char username[10];
+    char username[USERNAMEPASSWDLEN];
 } client;
 
-client *clients[1024];
-pthread_t thread[1024];
+client *clients[NUMBERUSERS];
+pthread_t thread[NUMBERUSERS];
 
 int cligetID(int socktID) {
     for (int i = 0; i < clientCount; ++i) {
@@ -101,8 +104,9 @@ void* handleConnection(void *connClientInfo) {
     for (int i = 0; i < clientCount; ++i) {
         if (clients[i]->id == id) {
             printf("Client ID%d deleted from client list\n", id);
+            free(clients[i]);
             clients[i] = NULL;
-            for (int j = i; j < 1024 - 1; ++j) {
+            for (int j = i; j < NUMBERUSERS - 1; ++j) {
                 clients[j] = clients[j + 1];
             }
             clientCount--;
@@ -146,7 +150,7 @@ void addFriend(int newsockfd, char *username) {
      * user zvoli ktoreho si chce pridat
      * tomu sa posle request
      * */
-    friend *userList[999] = {0};
+    friend *userList[NUMBERUSERS] = {0};
     int numOfusers = 0;
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, username) != 0) {
@@ -263,6 +267,7 @@ void updateFriendlist(char *usersName, char *friendsName) {
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, usersName) == 0) {
             strcpy(newFriend->fUsername, friendsName);
+            free(users[i]->friendlist[users[i]->numFrd]);
             users[i]->friendlist[users[i]->numFrd] = newFriend;
             users[i]->numFrd++;
         }
@@ -568,7 +573,7 @@ void deleteUser(char *name) {
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, name) == 0) {
             printf("User %s deleted\n", users[i]->username);
-            //free(users[i]);
+            free(users[i]);
             users[i] = NULL;
             for (int j = i; j < numberUsers - 1; ++j) {
                 users[j] = users[j + 1];
@@ -582,7 +587,7 @@ void deleteUser(char *name) {
 
 void sendFileServ(int newsockfd, char *current) {
     char buffer[MSGBUFFSIZE];
-    char loaded[10];
+    char loaded[USERNAMEPASSWDLEN];
 
     //creating temporary fileList
     fileInfo *temporary[9999] = {0};
@@ -665,6 +670,10 @@ void sendFileServ(int newsockfd, char *current) {
         bzero(buffer, MSGBUFFSIZE);
         strcpy(buffer, "There are no available files for you\n");
         send(newsockfd, buffer, MSGBUFFSIZE, MSG_EOR);
+    }
+
+    for (int i = 0; i < found; ++i) {
+        free(temporary[i]);
     }
 }
 
@@ -752,8 +761,7 @@ int server(int argc, char *argv[]) {
     chScBDErr(bind(sockfd, (struct sockaddr *) &serv_addr,
                    sizeof(serv_addr))); // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
 
-    listen(sockfd,
-           5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
+    listen(sockfd,5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
     updateAccountsLoad();
@@ -770,9 +778,7 @@ int server(int argc, char *argv[]) {
         struct sockaddr_in cli_addr = {};
         socklen_t cli_len = 0;
 
-
         n = accept(sockfd, (struct sockaddr *) &cli_addr, &cli_len);
-        // clients[clientCount]->sockID =
         if (n > 0) {
             client *new = (client *) malloc(sizeof(client));
             new->sockID = n;
@@ -789,23 +795,23 @@ int server(int argc, char *argv[]) {
                 }
             }
             pthread_mutex_unlock(&mutex);
-            //clients[clientCount] = new;
-
             pthread_create(&thread[new->id], NULL, handleConnection,(void *) new);
-
-            //clientCount++;
         }
-        //Client[clientCount].index = clientCount;
-
-
     }
-    /*for (int i = 0; i < clientCount; i++)
-        pthread_join(thread[i], NULL);*/
+    for (int i = 0; i < filesCount; ++i) {
+        free(fileList[i]);
+    }
+
+    for (int i = 0; i < numberUsers; ++i) {
+        free(users[i]);
+    }
+
+    for (int i = 0; i < clientCount; ++i) {
+        free(clients[i]);
+    }
 
     close(sockfd);
     exit(0);
-
-
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
 }
