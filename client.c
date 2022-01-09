@@ -63,9 +63,9 @@ void addFriendClie(int sockfd) {
     chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
     printf("%s\n", buffer); //vypisem spravu od serveru
 
-    if(strcmp(buffer,"Friend request sent!") == 0) {
+   //if((strcmp(buffer,"Friend request sent!") == 0)  || (strcmp(buffer,"Invalid input ") == 0)) {
         loggedMenuCli(sockfd);
-    }
+   // }
 }
 
 void getMessagesClie(int sockfd) { //read messages on server
@@ -309,9 +309,9 @@ void removeFriendClie(int sockfd) {
     printf("%s\n", buffer); //vypisem spravu od serveru
 
 
-    if((strcmp(buffer,"Friend removed!\n") == 0) || (strcmp(buffer,"You can add friends in following menu  \n") == 0)) {
+    //if((strcmp(buffer,"Friend removed!\n") == 0) || (strcmp(buffer,"You can add friends in following menu  \n") == 0)) {
         loggedMenuCli(sockfd);
-    }
+    //}
 }
 
 void backTologMenu(int sockfd) {
