@@ -45,7 +45,7 @@ void welcomeServ(int newsockfd) {
                 if(n < 0){
                     perror("Send option Error:");
                 }
-                break;
+                return;
 
             default:
                 printf("welcomeMenu cycle\n");
@@ -86,18 +86,14 @@ void loggedMenuServ(int newsockfd) {
 
         option = atoi(buffer);
         switch (option) {
-            case 0:
-                sendFileServ(newsockfd,getUsername(newsockfd));
-                exitFlag = 1;
-                break;
             case 1:
-                deleteUser(getUsername(newsockfd));
-                welcomeServ(newsockfd);
                 exitFlag = 1;
+                deleteUser(getUsername(newsockfd));
+                //welcomeServ(newsockfd);
                 break;
             case 2:
                 exitFlag = 1;
-                welcomeServ(newsockfd);
+                //welcomeServ(newsockfd);
                 break;
             case 3:
                 exitFlag = 1;
@@ -164,7 +160,7 @@ void msgMenuServ(int newsockfd) {
                 break;
             case 3:
                 exitFlag = 1;
-                loggedMenuServ(newsockfd);
+                //loggedMenuServ(newsockfd);
                 break;
 
             default:
@@ -203,7 +199,7 @@ void fileMenuServ(int newsockfd) {
                 break;
             case 3:
                 exitFlag = 1;
-                loggedMenuServ(newsockfd);
+                //loggedMenuServ(newsockfd);
                 break;
 
             default:
@@ -251,7 +247,7 @@ void groupMenuServ(int newsockfd) {
 
             case 6:
                 exitFlag = 1;
-                loggedMenuServ(newsockfd);
+                //loggedMenuServ(newsockfd);
                 break;
 
             default:

@@ -66,12 +66,12 @@ int filesCount = 0;
 int clientCount = 0;
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-int allLeft = 0;
 int cancel = 0;
+int idClient = 0;
 
 typedef struct {
 
-    //int index;
+    int id;
     int sockID;
     struct sockaddr_in clientAddr;
     unsigned int len;
@@ -83,16 +83,16 @@ pthread_t thread[1024];
 
 void* handleConnection(void *connClientInfo) {
     client *new = (client *) connClientInfo;
-    //int index = new->index;
+    int id = new->id;
     int clientSocket = new->sockID;
 
-    printf("Client ID%d connected.\n", clientSocket);
+    printf("Client ID%d connected.\n", id);
 
     welcomeServ(clientSocket);
-
+    pthread_mutex_lock(&mutex);
     for (int i = 0; i < clientCount; ++i) {
-        if (clients[i]->sockID == clientSocket) {
-            printf("Client ID%d deleted from client list\n", clientSocket);
+        if (clients[i]->id == id) {
+            printf("Client ID%d deleted from client list\n", id);
             free(clients[i]);
             for (int j = i; j < clientCount - 1; ++j) {
                 clients[j] = clients[j + 1];
@@ -100,8 +100,9 @@ void* handleConnection(void *connClientInfo) {
             clientCount--;
         }
     }
+    pthread_mutex_unlock(&mutex);
     close(clientSocket);
-    printf("Client ID%d disconnected.\n", clientSocket);
+    printf("Client ID%d disconnected.\n", id);
     pthread_join(thread[clientSocket], NULL);
     return NULL;
 }
@@ -762,11 +763,13 @@ int server(int argc, char *argv[]) {
             new->sockID = n;
             new->clientAddr = cli_addr;
             new->len = cli_len;
+            new->id = idClient;
             pthread_mutex_lock(&mutex);
             for (int i = 0; i < 10; ++i) {
                 if (!clients[i]) {
                     clients[i] = new;
                     clientCount++;
+                    idClient++;
                     break;
                 }
             }
@@ -787,17 +790,7 @@ int server(int argc, char *argv[]) {
     close(sockfd);
     exit(0);
 
-void *checkExit() {
-    char input[10];
-    printf("t3\n");
-    fgets(input, 10, stdin);
-    if (strcmp(input, "EXIT")) {
-        cancel = 1;
-        printf("t4\n");
-    }
-    printf("t5\n");
-    exit(0);
-}
+
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
 }
