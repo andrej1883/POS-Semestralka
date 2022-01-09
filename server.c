@@ -154,6 +154,7 @@ void addFriend(int newsockfd, char *username) {
             strcpy(helperFriend->fUsername, users[i]->username);
             userList[numOfusers] = helperFriend;
             numOfusers++;
+            helperFriend = NULL;
         }
     }
 
@@ -182,6 +183,10 @@ void addFriend(int newsockfd, char *username) {
             nonFriends[numOfNonFrd] = helperFriend;
             numOfNonFrd++;
         }
+    }
+
+    for (int i = 0; i < numOfusers; ++i) {
+        free(userList[i]);
     }
 
     char buffer[MSGBUFFSIZE];
@@ -234,6 +239,9 @@ void addFriend(int newsockfd, char *username) {
         }
         //const char *msg = "Friend request sent!";
         chScWErr(write(newsockfd, buffer, MSGBUFFSIZE));
+        for (int i = 1; i < numOfNonFrd; ++i) {
+            free(nonFriends[i]);
+        }
     }
     loggedMenuServ(newsockfd);
 }
@@ -1231,7 +1239,7 @@ void createGroup(int newsockfd, char *founderName) {
     groupChats[numberChats] = newGroup;
     numberChats++;
 
-    user *founder = (user *) malloc(sizeof(user));
+    user *founder;// = (user *) malloc(sizeof(user));
     for (int i = 0; i < numberUsers; ++i) {
         if (strcmp(users[i]->username, founderName) == 0) {
             founder = users[i];
@@ -1299,6 +1307,7 @@ void addMember(int newsockfd, char *membersName) {
                     strcpy(helperFriend->fUsername, users[i]->username);
                     userList[numOfusers] = helperFriend;
                     numOfusers++;
+                    helperFriend = NULL;
                 }
             }
 
@@ -1346,6 +1355,10 @@ void addMember(int newsockfd, char *membersName) {
                         newMemberU->numGroups++;
                     }
                     pthread_mutex_unlock(&mutex);
+
+                    for (int i = 0; i < numOfusers; ++i) {
+                        free(userList[i]);
+                    }
 
                     bzero(buffer, MSGBUFFSIZE);
                     strcpy(buffer, "User added to chat! \n");
