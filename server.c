@@ -66,32 +66,44 @@ int filesCount = 0;
 int clientCount = 0;
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+int allLeft = 0;
+int cancel = 0;
 
-struct client {
+typedef struct {
 
-    int index;
+    //int index;
     int sockID;
     struct sockaddr_in clientAddr;
-    int len;
+    unsigned int len;
     char username[10];
-};
+} client;
 
-struct client Client[1024];
+client *clients[1024];
 pthread_t thread[1024];
 
-void *handleConnectior(void *connClientInfo) {
-
-    struct client *new = (struct client *) connClientInfo;
-    int index = new->index;
+void* handleConnection(void *connClientInfo) {
+    client *new = (client *) connClientInfo;
+    //int index = new->index;
     int clientSocket = new->sockID;
 
-    printf("Client %d connected.\n", index + 1);
-    welcomeServ(clientSocket);
-    close(clientSocket);
-    printf("Client %d disconnected.\n", index + 1);
-    clientCount--;
-    return NULL;
+    printf("Client ID%d connected.\n", clientSocket);
 
+    welcomeServ(clientSocket);
+
+    for (int i = 0; i < clientCount; ++i) {
+        if (clients[i]->sockID == clientSocket) {
+            printf("Client ID%d deleted from client list\n", clientSocket);
+            free(clients[i]);
+            for (int j = i; j < clientCount - 1; ++j) {
+                clients[j] = clients[j + 1];
+            }
+            clientCount--;
+        }
+    }
+    close(clientSocket);
+    printf("Client ID%d disconnected.\n", clientSocket);
+    pthread_join(thread[clientSocket], NULL);
+    return NULL;
 }
 
 void trimNL(char *arr, int length) {
@@ -105,16 +117,16 @@ void trimNL(char *arr, int length) {
 
 void setUsername(char *username, int sockfd) {
     for (int i = 0; i < clientCount; ++i) {
-        if (Client[i].sockID == sockfd) {
-            strcpy(Client[i].username, username);
+        if (clients[i]->sockID == sockfd) {
+            strcpy(clients[i]->username, username);
         }
     }
 }
 
 char *getUsername(int sockfd) {
     for (int i = 0; i < clientCount; ++i) {
-        if (Client[i].sockID == sockfd) {
-            return Client[i].username;
+        if (clients[i]->sockID == sockfd) {
+            return clients[i]->username;
         }
     }
     return NULL;
@@ -389,7 +401,7 @@ void updateFileLogSave() {
     fputs(counts, filePointer);
     fclose(filePointer);
 
-    bzero(sId,10);
+    bzero(sId, 10);
 
     FILE *filePointer2;
     remove("file_log.txt");
@@ -694,6 +706,18 @@ void rcvFileServ(int newsockfd) {
     fclose(filepointer);
 }
 
+void* checkExit() {
+    char input[10];
+    printf("t3\n");
+    fgets(input,10,stdin);
+    if(strcmp(input,"EXIT")) {
+        cancel = 1;
+        printf("t4\n");
+    }
+
+    exit(0);
+}
+
 int server(int argc, char *argv[]) {
     int sockfd;
     struct sockaddr_in serv_addr;
@@ -709,27 +733,71 @@ int server(int argc, char *argv[]) {
     serv_addr.sin_port = htons(atoi(argv[1])); //nastavi port litle to big endian
 
     chScCRErr(sockfd = socket(AF_INET, SOCK_STREAM, 0)); // vytvori socket
-    chScBDErr(bind(sockfd, (struct sockaddr *) &serv_addr,sizeof(serv_addr))); // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
+    chScBDErr(bind(sockfd, (struct sockaddr *) &serv_addr,
+                   sizeof(serv_addr))); // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
 
-    listen(sockfd,5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
+    listen(sockfd,
+           5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
     updateAccountsLoad();
     updateFileLogLoad();
 
-    while (clientCount >= 0) {
+    pthread_t th1;
+    printf("t1\n");
+    pthread_create(&th1, NULL, checkExit, NULL);
+    printf("t2\n");
 
-        Client[clientCount].sockID = accept(sockfd, (struct sockaddr *) &Client[clientCount].clientAddr,&Client[clientCount].len);
-        Client[clientCount].index = clientCount;
-        pthread_create(&thread[clientCount], NULL, handleConnectior, (void *) &Client[clientCount]);
-        clientCount++;
+
+    while (cancel == 0) {
+        int n = 0;
+        struct sockaddr_in cli_addr = {};
+        socklen_t cli_len = 0;
+
+
+        n = accept(sockfd, (struct sockaddr *) &cli_addr, &cli_len);
+        // clients[clientCount]->sockID =
+        if (n > 0) {
+            client *new = (client *) malloc(sizeof(client));
+            new->sockID = n;
+            new->clientAddr = cli_addr;
+            new->len = cli_len;
+            pthread_mutex_lock(&mutex);
+            for (int i = 0; i < 10; ++i) {
+                if (!clients[i]) {
+                    clients[i] = new;
+                    clientCount++;
+                    break;
+                }
+            }
+            pthread_mutex_unlock(&mutex);
+            //clients[clientCount] = new;
+
+            pthread_create(&thread[new->sockID], NULL, handleConnection,(void *) new);
+
+            //clientCount++;
+        }
+        //Client[clientCount].index = clientCount;
+
+
     }
-    for (int i = 0; i < clientCount; i++)
-        pthread_join(thread[i], NULL);
+    /*for (int i = 0; i < clientCount; i++)
+        pthread_join(thread[i], NULL);*/
 
     close(sockfd);
     exit(0);
 
+void *checkExit() {
+    char input[10];
+    printf("t3\n");
+    fgets(input, 10, stdin);
+    if (strcmp(input, "EXIT")) {
+        cancel = 1;
+        printf("t4\n");
+    }
+    printf("t5\n");
+    exit(0);
+}
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
 }

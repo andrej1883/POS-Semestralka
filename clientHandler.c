@@ -41,13 +41,14 @@ void welcomeCli(int sockfd) {
                 authClie(sockfd);
                 break;
             case 3:
+                exitFlag = 1;
                 bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
                 n = recv(sockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
                 if(n < 0){
                     perror("Receive option Error:");
                 }
                 printf("%s\n", buffer); //vypisem spravu od serveru
-                exit(0);
+                break;
             default:
                 bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
                 n = recv(sockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
@@ -58,7 +59,7 @@ void welcomeCli(int sockfd) {
                 exitFlag = 0;
         }
     }
-
+    exit(0);
 }
 
 void loggedMenuCli(int sockfd) {
@@ -80,7 +81,6 @@ void loggedMenuCli(int sockfd) {
     while(exitFlag == 0) {
         printf("What you want to do?\n");
         printf("Select your option: \n");
-        printf("0. Test download\n");
         printf("1. Delete account\n");
         printf("2. Log out\n");
         printf("3. Add friend\n");
@@ -102,10 +102,6 @@ void loggedMenuCli(int sockfd) {
         option  = atoi(buffer);
 
         switch (option) {
-            case 0:
-                rcvFileCli(sockfd);
-                exitFlag = 1;
-                break;
             case 1:
                 exitFlag = 1;
                 welcomeCli(sockfd);
@@ -139,10 +135,11 @@ void loggedMenuCli(int sockfd) {
                 manageRequestsClie(sockfd);
                 break;
             case 9:
+                exitFlag = 1;
                 bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
                 chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
                 printf("%s\n", buffer); //vypisem spravu od serveru
-                exit(0);
+                break;
             default:
                 exitFlag = 0;
         }
@@ -185,7 +182,6 @@ void msgMenuCli(int sockfd) {
                 chScRErr(read(sockfd, buffer, MSGBUFFSIZE));
                 printf("%s\n", buffer); //vypisem spravu od serveru
                 exitFlag = 0;
-                //printf("here we go again\n");
         }
     }
 }
