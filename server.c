@@ -63,7 +63,6 @@ int numberChats = 0;
 int numberUsers = 0;
 int fileIdS = 0;
 int filesCount = 0;
-
 int clientCount = 0;
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -80,18 +79,17 @@ struct client {
 struct client Client[1024];
 pthread_t thread[1024];
 
-void *doNetworking(void *ClientDetail) {
+void *handleConnectior(void *connClientInfo) {
 
-    struct client *clientDetail = (struct client *) ClientDetail;
-    int index = clientDetail->index;
-    int clientSocket = clientDetail->sockID;
+    struct client *new = (struct client *) connClientInfo;
+    int index = new->index;
+    int clientSocket = new->sockID;
 
     printf("Client %d connected.\n", index + 1);
-
-    while (1) {
-        welcomeServ(clientSocket);
-    }
-
+    welcomeServ(clientSocket);
+    close(clientSocket);
+    printf("Client %d disconnected.\n", index + 1);
+    clientCount--;
     return NULL;
 
 }
@@ -707,8 +705,7 @@ int server(int argc, char *argv[]) {
     serv_addr.sin_port = htons(atoi(argv[1])); //nastavi port litle to big endian
 
     chScCRErr(sockfd = socket(AF_INET, SOCK_STREAM, 0)); // vytvori socket
-    chScBDErr(bind(sockfd, (struct sockaddr *) &serv_addr,
-                   sizeof(serv_addr))); // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
+    chScBDErr(bind(sockfd, (struct sockaddr *) &serv_addr,sizeof(serv_addr))); // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
 
     listen(sockfd,5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
 
@@ -716,14 +713,12 @@ int server(int argc, char *argv[]) {
     updateAccountsLoad();
     updateFileLogLoad();
 
-    while (1) {
+    while (clientCount >= 0) {
 
         Client[clientCount].sockID = accept(sockfd, (struct sockaddr *) &Client[clientCount].clientAddr,&Client[clientCount].len);
         Client[clientCount].index = clientCount;
-        pthread_create(&thread[clientCount], NULL, doNetworking, (void *) &Client[clientCount]);
-
+        pthread_create(&thread[clientCount], NULL, handleConnectior, (void *) &Client[clientCount]);
         clientCount++;
-
     }
     for (int i = 0; i < clientCount; i++)
         pthread_join(thread[i], NULL);

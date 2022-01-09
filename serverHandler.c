@@ -1,7 +1,3 @@
-//
-// Created by pc on 3. 1. 2022.
-//
-
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,12 +39,13 @@ void welcomeServ(int newsockfd) {
                 authServ(newsockfd);
                 break;
             case 3:
+                exitFlag = 1;
                 msg = "See you soon :)\n";
                 n = send(newsockfd,msg,MSGBUFFSIZE,MSG_EOR);
                 if(n < 0){
                     perror("Send option Error:");
                 }
-                exit(0);
+                break;
 
             default:
                 printf("welcomeMenu cycle\n");
@@ -127,12 +124,13 @@ void loggedMenuServ(int newsockfd) {
                 manageRequests(newsockfd, getUsername(newsockfd));
                 break;
             case 9:
+                exitFlag = 1;
                 msg = "See you soon :)\n";
                 n = send(newsockfd,msg,MSGBUFFSIZE,MSG_EOR);
                 if(n < 0){
                     perror("Send option Error:");
                 }
-                exit(0);
+                break;
 
             default:
                 msg = "Choose correct option!\n";
