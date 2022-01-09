@@ -5,31 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
 #include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <pthread.h>
 #include "errors.h"
 #include "clientHandler.h"
 #include "client.h"
 #include "server.h"
 
 #define MSGBUFFSIZE 256
-
 char myName[10];
 
-
-void * doRecieving(void * sockID){
-
-    int clientSocket = *((int *) sockID);
-
-    while(1){
-
-        welcomeCli(clientSocket);
-
-    }
-
-}
 
 void authClie(int sockfd) {
     char buffer[MSGBUFFSIZE];
@@ -89,8 +73,6 @@ void getMessagesClie(int sockfd) { //read messages on server
     int n;
 
     bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
-    //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-
     n = recv(sockfd, buffer, MSGBUFFSIZE, MSG_WAITALL);
     if(n < 0){
         perror("Receive name Error:");
@@ -99,12 +81,9 @@ void getMessagesClie(int sockfd) { //read messages on server
 
     bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
     fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
-    //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
     send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
 
     bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
-    //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-
     n = recv(sockfd, buffer,MSGBUFFSIZE, MSG_WAITALL);
     if(n < 0){
         perror("Receive name Error:");
@@ -112,14 +91,6 @@ void getMessagesClie(int sockfd) { //read messages on server
     printf("%s\n", buffer); //vypisem spravu od serveru
 
     msgMenuCli( sockfd);
-}
-
-void getMessagesFromClie(int sockfd) {
-    char buffer[MSGBUFFSIZE];
-
-    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
-    chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
-    printf("%s\n", buffer); //vypisem spravu od serveru
 }
 
 void registerClie(int sockfd) {
@@ -131,7 +102,6 @@ void registerClie(int sockfd) {
 
     bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
     fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
-    //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
     n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
     if(n < 0){
         perror("Send option Error:");
@@ -144,7 +114,6 @@ void registerClie(int sockfd) {
     printf("Please enter password: ");
     bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
     fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
-    //chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
     n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
     if(n < 0){
         perror("Send option Error:");
@@ -152,7 +121,6 @@ void registerClie(int sockfd) {
 
 
     bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
-    //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
     n = recv(sockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
     if(n < 0){
         perror("Receive option Error:");
@@ -166,7 +134,6 @@ void registerClie(int sockfd) {
 }
 
 void sendFileInfoCLie(int sockfd, char *filename, char *toUser) {
-    //funguje
     char buffer[MSGBUFFSIZE];
 
     bzero(buffer,MSGBUFFSIZE);
@@ -176,12 +143,9 @@ void sendFileInfoCLie(int sockfd, char *filename, char *toUser) {
     strcat(buffer," ");
     strcat(buffer,toUser);
     chScWErr(write(sockfd, buffer, MSGBUFFSIZE));
-    //send(sockfd,buffer,256,MSG_EOR);
-    //bzero(buffer,sizeof (buffer));
 }
 
 void sendFileClie(char* filename,int sockfd, char* toUser) {
-    //funguej
     FILE *filePointer;
     char data[1024] = {0};
     char buffer[2048];
@@ -194,7 +158,6 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
         {
             strcat(buffer,data);
         }
-       //chSFErr(send(sockfd,buffer,2048,0));
         send(sockfd,buffer,2048,0);
         bzero(data, 1024);
         fclose(filePointer);
@@ -204,20 +167,10 @@ void sendFileClie(char* filename,int sockfd, char* toUser) {
 }
 
 void rcvFileCli(int sockfd) {
-    //send your name  to server
     char buffer[MSGBUFFSIZE];
     int n;
 
-    //strcpy(myName, "Pepa");
-    /*//strcpy(myName, "Pepa");
-    bzero(buffer, sizeof(buffer));
-    strcpy(buffer, myName);
-    //chScWErr(write(sockfd, buffer, sizeof(buffer)));
-    send(sockfd,buffer,10,MSG_EOR);*/
-
-
     bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
-    //chScRErr(read(sockfd, buffer, sizeof (buffer))); //precitam spravu zo servera
     n = recv(sockfd, buffer, MSGBUFFSIZE, MSG_WAITALL);
     if(n < 0){
         perror("Receive name Error:");
@@ -229,15 +182,12 @@ void rcvFileCli(int sockfd) {
         printf("Please enter number of file: ");
         bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
         fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
-        //chScWErr(write(sockfd, buffer, sizeof (buffer)));
         send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
 
-        int n;
         FILE *filepointer;
         char filename[256];
         char fileBuffer[2048];
         char directory[100] = "downloadedFiles/";
-
 
         struct stat st = {0};
         if (stat(directory, &st) == -1) {
@@ -250,7 +200,6 @@ void rcvFileCli(int sockfd) {
         }
 
         bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
-        //chScRErr(read(sockfd, buffer,sizeof (buffer))); //precitam spravu zo servera
         n = recv(sockfd, buffer, MSGBUFFSIZE, MSG_WAITALL);
         if(n < 0){
             perror("Receive name Error:");
@@ -261,14 +210,6 @@ void rcvFileCli(int sockfd) {
 
         bzero(fileBuffer, sizeof(fileBuffer));
         filepointer = fopen(directory, "w");
-        /*while (1) {
-            n = recv(sockfd, fileBuffer, 1024, 0);
-            if (n <= 0) {
-                break;
-            }
-            fprintf(filepointer, "%s", fileBuffer);
-            bzero(fileBuffer, 1024);
-        }*/
         n = recv(sockfd, fileBuffer, 2048, MSG_WAITALL);
         if (n < 0) {
             perror("Receive file Error:");
@@ -289,8 +230,6 @@ int client(int argc, char *argv[])
     int sockfd;
     struct sockaddr_in serv_addr;
     struct hostent* server; //uchovava informacie o serveri
-
-    char buffer[MSGBUFFSIZE];
 
     if (argc < 3)
     {
@@ -320,62 +259,10 @@ int client(int argc, char *argv[])
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-    // Set the socket I/O mode: In this case FIONBIO
-    // enables or disables the blocking mode for the
-    // socket based on the numerical value of iMode.
-    // If iMode = 0, blocking is enabled;
-    // If iMode != 0, non-blocking mode is enabled.
-    ioctl(sockfd, FIONBIO, 0);
-
-    //signal(SIGPIPE, SIG_IGN);
-
-    //authClie(sockfd);
-    //registerClie(sockfd);
-    //loggedMenuCli(sockfd,"Lojzik");
-    //sendFileClie("file.txt", sockfd,"Pepa");
-    //sendFileInfoCLie(sockfd,"file.txt","Pepas");
-
-
-
-
     welcomeCli(sockfd);
-    //rcvFileCli(sockfd);
-
-  /*  pthread_t thread;
-    int clientSocket = *((int *) &sockfd);
-    pthread_create(&thread, NULL, doRecieving, (void *) &sockfd );*/
-
-
-
-
-
-
-
-
-
-    exit(0);
-
-    for (;;) {
-        printf("Please enter a message: ");
-        bzero(buffer, 256); //vynulujem buffer
-        fgets(buffer, 255, stdin); //naplnim buffer
-        if (strcmp(buffer, "exit") == 0) {
-            break;
-        }
-        chScWErr(write(sockfd, buffer, strlen(buffer))); //zapisem buffer na server
-
-        getMessagesClie(sockfd);
-        //getMessagesFromClie(sockfd);
-        bzero(buffer, 256); //vynulujem buffer
-        chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-
-        printf("%s\n", buffer); //vypisem spravu od serveru
-    }
-    //--------------------------------jadro aplikacie--------------------------------------------------------------------
-
     close(sockfd); //uzavriem socket
-
-    return 0;
+    exit(0);
+    //--------------------------------jadro aplikacie--------------------------------------------------------------------
 }
 
 void manageRequestsClie(int sockfd) {

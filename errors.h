@@ -8,7 +8,7 @@ void chScRErr(int n);
 void chScWErr(int n);
 void chScCRErr(int n);
 void chScBDErr(int n);
-void chScACErr(int n);
+//void chScACErr(int n);
 void chScCNErr(int n);
 void chSFErr(int n);
 

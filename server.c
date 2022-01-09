@@ -5,7 +5,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <sys/ioctl.h>
 #include <pthread.h>
 #include "errors.h"
 #include "serverHandler.h"
@@ -14,7 +13,6 @@
 #define MSGBUFFSIZE 256
 
 typedef struct {
-    //struct user* fromUser;
     char fromUser[10];
     char text[10000];
     int newMsg;
@@ -69,7 +67,6 @@ int filesCount = 0;
 int clientCount = 0;
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 struct client {
 
@@ -77,7 +74,6 @@ struct client {
     int sockID;
     struct sockaddr_in clientAddr;
     int len;
-    user *clientUser;
     char username[10];
 };
 
@@ -93,9 +89,7 @@ void *doNetworking(void *ClientDetail) {
     printf("Client %d connected.\n", index + 1);
 
     while (1) {
-        //pthread_mutex_lock(&mutex);
         welcomeServ(clientSocket);
-        //pthread_mutex_unlock(&mutex);
     }
 
     return NULL;
@@ -117,7 +111,6 @@ void setUsername(char *username, int sockfd) {
             strcpy(Client[i].username, username);
         }
     }
-
 }
 
 char *getUsername(int sockfd) {
@@ -126,8 +119,7 @@ char *getUsername(int sockfd) {
             return Client[i].username;
         }
     }
-
-
+    return NULL;
 }
 
 void addFriend(int newsockfd, char *username) {
@@ -156,7 +148,7 @@ void addFriend(int newsockfd, char *username) {
 
     friend *nonFriends[numOfusers + 1];
     int numOfNonFrd = 1;
-    int decision = 0;
+    int decision;
 
     for (int i = 0; i < numOfusers; ++i) {
         decision = 1;
@@ -216,8 +208,6 @@ void addFriend(int newsockfd, char *username) {
             pthread_mutex_unlock(&mutex);
 
         }
-        //trimNL(buffer,sizeof (buffer));
-        //strcpy(choise, buffer);
         const char *msg = "Friend request sent!";
         chScWErr(write(newsockfd, msg, MSGBUFFSIZE));
     }
@@ -236,7 +226,6 @@ void sendRequest(char *fromUser, char *toUser) {
             users[i]->numReq++;
         }
     }
-
 }
 
 void updateFriendlist(char *usersName, char *friendsName) {
@@ -256,7 +245,6 @@ void establishFriendship(char *friendOne, char *friendTwo) {
 }
 
 void authServ(int newsockfd) {
-
     char buffer[MSGBUFFSIZE];
     char name[10];
     char psswd[10];
@@ -334,7 +322,6 @@ void updateAccountsSave() {
 }
 
 void updateFileLogLoad() {
-    //funguje
     FILE *filePointer;
     char line[50];
 
@@ -385,7 +372,6 @@ void updateFileLogLoad() {
 }
 
 void updateFileLogSave() {
-    //funguje
     FILE *filePointer;
     remove("file_log_count.txt");
     filePointer = fopen("file_log_count.txt", "w+");
@@ -398,14 +384,14 @@ void updateFileLogSave() {
     strcat(counts, " ");
     strcat(counts, SID);
     fputs(counts, filePointer);
-
     fclose(filePointer);
+
+    bzero(sId,10);
 
     FILE *filePointer2;
     remove("file_log.txt");
     filePointer2 = fopen("file_log.txt", "w");
     for (int i = 0; i < filesCount; ++i) {
-        char sId[10];
         sprintf(sId, "%i", fileList[i]->fileIDI);
         fputs(sId, filePointer2);
         fputs(" ", filePointer2);
@@ -454,7 +440,6 @@ void addMessage(char *toUserName, char *text, char *fromUserName) {
     }
     pthread_mutex_unlock(&mutex);
 }
-
 
 void getMessagesFrom(int newsockfd, char *msgOfUser, char *msgFromUser) {
     char buffer[MSGBUFFSIZE];
@@ -566,21 +551,8 @@ void deleteUser(char *name) {
 
 
 void sendFileServ(int newsockfd, char *current) {
-    //char current[10];
     char buffer[MSGBUFFSIZE];
     char loaded[10];
-    int n;
-
-    //receive name of current user from client
-    /* bzero(current, sizeof (buffer));
-     chScRErr(read(newsockfd, current, 10));
-     trimNL(current, sizeof(current));*/
-
-    /*bzero(current, sizeof (current));
-    n = recv(newsockfd, current, sizeof(current), 0);
-    if(n < 0){
-        perror("Receive name Error:");
-    }*/
 
     //creating temporary fileList
     fileInfo *temporary[9999];
@@ -604,7 +576,9 @@ void sendFileServ(int newsockfd, char *current) {
         }
     }
     pthread_mutex_unlock(&mutex);
+
     if (found > 0) {
+
         bzero(buffer, MSGBUFFSIZE);
         strcpy(buffer, "Here are your files: \n");
         for (int i = 0; i < found; ++i) {
@@ -620,14 +594,8 @@ void sendFileServ(int newsockfd, char *current) {
 
         send(newsockfd, buffer, MSGBUFFSIZE, MSG_EOR);
 
-
-
         bzero(buffer, MSGBUFFSIZE);
         chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
-        /*n = recv(newsockfd, buffer, MSGBUFFSIZE, MSG_WAITALL);
-        if (n < 0) {
-            perror("Receive name Error:");
-        }*/
 
         int chosenReq;
         sscanf(buffer, "%d", &chosenReq);
@@ -635,7 +603,6 @@ void sendFileServ(int newsockfd, char *current) {
         char file[100] = "files/";
         char type[5] = ".fl";
         char sId[10];
-
 
         sprintf(sId, "%i", temporary[chosenReq]->fileIDI);
         strcat(file, sId);
@@ -672,14 +639,11 @@ void sendFileServ(int newsockfd, char *current) {
 }
 
 void getFileInfoServ(int newsockfd) {
-    //funguje
     char buffer[MSGBUFFSIZE];
-    int n;
 
     fileInfo *new = (fileInfo *) malloc(sizeof(fileInfo));
 
     bzero(buffer, MSGBUFFSIZE);
-    //chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
     chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
 
     sscanf(buffer, "%s %s %s", new->fileName, new->fromUser, new->toUser);
@@ -696,7 +660,6 @@ void getFileInfoServ(int newsockfd) {
 }
 
 void rcvFileServ(int newsockfd) {
-    //funguje
     int n;
     FILE *filepointer;
     char buffer[2048];
@@ -730,10 +693,8 @@ void rcvFileServ(int newsockfd) {
 }
 
 int server(int argc, char *argv[]) {
-    int sockfd, newsockfd;
-    socklen_t cli_len;
-    struct sockaddr_in serv_addr, cli_addr;
-    char buffer[MSGBUFFSIZE];
+    int sockfd;
+    struct sockaddr_in serv_addr;
 
     if (argc < 2) {
         fprintf(stderr, "usage %s port\n", argv[0]);
@@ -749,69 +710,29 @@ int server(int argc, char *argv[]) {
     chScBDErr(bind(sockfd, (struct sockaddr *) &serv_addr,
                    sizeof(serv_addr))); // na socket namapujem strukturu (tento socket bude pracovat so spojeniami z celeho internetu na tomto porte)
 
-
-    listen(sockfd,
-           5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
-    cli_len = sizeof(cli_addr);
-
-    //chScACErr(newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr,
-    //                             &cli_len)); //blokujuce systemove volanie, ked sa niekto pripoji, vrati novy socket na komunikaciu s pripojenym klientom
-
+    listen(sockfd,5); //pasivny socket (nie na komunikaciu, ale na pripojenie pouzivatela) n:kolko klientov sa moze pripojit v jeden moment
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-    // Set the socket I/O mode: In this case FIONBIO
-    // enables or disables the blocking mode for the
-    // socket based on the numerical value of iMode.
-    // If iMode = 0, blocking is enabled;
-    // If iMode != 0, non-blocking mode is enabled.
-    ioctl(sockfd, FIONBIO, 0);
-
-    //signal(SIGPIPE, SIG_IGN);
-
     updateAccountsLoad();
     updateFileLogLoad();
 
-
-    //deleteUser("Pepa");
-    //authServ(newsockfd);
-    //registerUser(newsockfd);
-    //loggedMenuServ(newsockfd);
-    //rcvFileServ(newsockfd);
-    //getFileInfoServ(newsockfd);
-
-
     while (1) {
 
-        Client[clientCount].sockID = accept(sockfd, (struct sockaddr *) &Client[clientCount].clientAddr,
-                                            &Client[clientCount].len);
+        Client[clientCount].sockID = accept(sockfd, (struct sockaddr *) &Client[clientCount].clientAddr,&Client[clientCount].len);
         Client[clientCount].index = clientCount;
         pthread_create(&thread[clientCount], NULL, doNetworking, (void *) &Client[clientCount]);
 
         clientCount++;
 
     }
-
     for (int i = 0; i < clientCount; i++)
         pthread_join(thread[i], NULL);
 
-
-
-
-
-
-
-
-    //welcomeServ(newsockfd);
-    //sendFileServ(newsockfd);
+    close(sockfd);
     exit(0);
 
 
     //--------------------------------jadro aplikacie--------------------------------------------------------------------
-
-    close(newsockfd); // uzatvaram az ked chcem ukoncit komunikaciu
-    close(sockfd);
-
-    return 0;
 }
 
 void manageRequests(int newsockfd, char *username) {
@@ -1278,8 +1199,8 @@ void addMember(int newsockfd, char *membersName) {
         strcpy(newMember->fUsername, users[test2]->username);
         group->members[group->numMemb] = newMember;
         group->numMemb++;
-
-        user *newMemberU = (user *) malloc(sizeof(user));
+        //TODO:Check if commented code works
+        user *newMemberU;// = (user *) malloc(sizeof(user));
         newMemberU = users[test2];
 
         newMemberU->groupChats[newMemberU->numGroups] = group;
@@ -1357,7 +1278,6 @@ void removeMember(int newsockfd, char *membersName) {
     }
     managingUser->numGroups--;
 
-    //groupChat *helperGroup = (groupChat *) malloc(sizeof (groupChat));
     for (int i = 0; i < managingUser->numGroups; ++i) {
         if (i >= chosengr) {
             managingUser->groupChats[i] = managingUser->groupChats[i + 1];

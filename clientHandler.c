@@ -1,4 +1,3 @@
-#include <printf.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -25,9 +24,9 @@ void welcomeCli(int sockfd) {
         printf("3. exit\n");
         printf("Your option: ");
 
+
         bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
         fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
-        //chScWErr(write(sockfd, buffer, strlen(buffer)));
         n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
         if(n < 0){
             perror("Send option Error:");
@@ -36,22 +35,13 @@ void welcomeCli(int sockfd) {
         option  = atoi(buffer);
         switch (option) {
             case 1:
-                /*bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
-                exitFlag = 1;*/
                 registerClie(sockfd);
                 break;
             case 2:
-                /*bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                printf("%s\n", buffer); //vypisem spravu od serveru
-                exitFlag = 1;*/
                 authClie(sockfd);
                 break;
             case 3:
                 bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
-                //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
                 n = recv(sockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
                 if(n < 0){
                     perror("Receive option Error:");
@@ -60,14 +50,12 @@ void welcomeCli(int sockfd) {
                 exit(0);
             default:
                 bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
-                //chScRErr(read(sockfd, buffer, 255));
                 n = recv(sockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
                 if(n < 0){
                     perror("Receive option Error:");
                 }
                 printf("%s\n", buffer); //vypisem spravu od serveru
                 exitFlag = 0;
-                //printf("here we go again\n");
         }
     }
 
@@ -82,7 +70,6 @@ void loggedMenuCli(int sockfd) {
 
     bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
     strcpy(buffer,getMyName());
-    //chScWErr(write(sockfd, buffer, strlen(buffer)));
     n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
     if(n < 0){
         perror("Send option Error:");
@@ -107,7 +94,6 @@ void loggedMenuCli(int sockfd) {
         printf("Your option: ");
         bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
         fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
-        //chScWErr(write(sockfd, buffer, strlen(buffer)));
         n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
         if(n < 0){
             perror("Send option Error:");
@@ -159,7 +145,6 @@ void loggedMenuCli(int sockfd) {
                 exit(0);
             default:
                 exitFlag = 0;
-                //printf("here we go again\n");
         }
     }
 }
@@ -221,7 +206,6 @@ void fileMenuCli(int sockfd) {
 
         bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
         fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
-        //chScWErr(write(sockfd, buffer, strlen(buffer)));
         n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
         if(n < 0){
             perror("Send option Error:");
@@ -252,12 +236,6 @@ void fileMenuCli(int sockfd) {
                 loggedMenuCli(sockfd);
                 break;
             default:
-                /*bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255));
-                printf("%s\n", buffer); //vypisem spravu od serveru
-                exitFlag = 0;*/
-                //printf("here we go again\n");
-
                 bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
                 //chScRErr(read(sockfd, buffer, 255));
                 n = recv(sockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
@@ -321,7 +299,6 @@ void groupMenuCli(int sockfd) {
                 chScRErr(read(sockfd, buffer, MSGBUFFSIZE));
                 printf("%s\n", buffer); //vypisem spravu od serveru
                 exitFlag = 0;
-                //printf("here we go again\n");
         }
     }
 }

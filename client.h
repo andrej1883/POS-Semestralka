@@ -1,5 +1,3 @@
-
-
 #ifndef SOCKETY_CLIENT_H
 #define SOCKETY_CLIENT_H
 
@@ -9,7 +7,6 @@ void fileMenuCli(int sockfd);
 int client(int argc, char *argv[]);
 
 void getMessagesClie(int sockfd);
-void getMessagesFromClie(int sockfd);
 void addFriendClie(int sockfd);
 void manageRequestsClie(int sockfd);
 void removeFriendClie(int sockfd);
@@ -18,7 +15,7 @@ void sendMessageClie(int sockfd);
 void sendFileClie(char *filename, int sockfd, char *toUser);
 
 void rcvFileCli(int newsockfd);
- char* getMyName();
+char* getMyName();
 
 void addMemberClie(int sockfd);
 void createGroupClie(int sockfd);
