@@ -12,12 +12,14 @@
 #include "errors.h"
 #include "server.h"
 
+#define MSGBUFFSIZE 256
+
 //char username[10];
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 void welcomeServ(int newsockfd) {
-    char buffer[10];
+    char buffer[MSGBUFFSIZE];
     int exitFlag = 0;
     int option;
     char *msg;
@@ -29,9 +31,9 @@ void welcomeServ(int newsockfd) {
 
     while (exitFlag == 0) {
 
-        bzero(buffer, 10); //vynulujem buffer
+        bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
         //chScRErr(read(newsockfd, buffer, 10));
-        n = recv(newsockfd,buffer,10,MSG_WAITALL);
+        n = recv(newsockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
         if(n < 0){
             perror("Receive option Error:");
         }
@@ -54,7 +56,7 @@ void welcomeServ(int newsockfd) {
             case 3:
                 msg = "See you soon :)\n";
                 //chScWErr(write(newsockfd, msg, strlen(msg)+1));
-                n = send(newsockfd,msg,255,MSG_EOR);
+                n = send(newsockfd,msg,MSGBUFFSIZE,MSG_EOR);
                 if(n < 0){
                     perror("Send option Error:");
                 }
@@ -64,7 +66,7 @@ void welcomeServ(int newsockfd) {
                 printf("welcomeMenu cycle\n");
                 msg = "Choose correct option!\n";
                 //chScWErr(write(newsockfd, msg, strlen(msg)+1));
-                n = send(newsockfd,msg,255,MSG_EOR);
+                n = send(newsockfd,msg,MSGBUFFSIZE,MSG_EOR);
                 if(n < 0){
                     perror("Send option Error:");
                 }
@@ -73,7 +75,7 @@ void welcomeServ(int newsockfd) {
 }
 
 void loggedMenuServ(int newsockfd) {
-    char buffer[10];
+    char buffer[MSGBUFFSIZE];
     int exitFlag = 0;
     int option;
     char *msg;
@@ -82,12 +84,12 @@ void loggedMenuServ(int newsockfd) {
     //if (username[1] == '\000') {
     //bzero(username, sizeof(username));
     //chScRErr(read(newsockfd, username, 10));
-    bzero(buffer, sizeof(buffer));
-    n = recv(newsockfd,buffer,10,MSG_WAITALL);
+    bzero(buffer, MSGBUFFSIZE);
+    n = recv(newsockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
         if(n < 0){
             perror("Receive option Error:");
         }
-        trimNL(buffer, sizeof(buffer));
+        trimNL(buffer, MSGBUFFSIZE);
 
     pthread_mutex_lock(&mutex);
     setUsername(buffer,newsockfd);
@@ -105,9 +107,9 @@ void loggedMenuServ(int newsockfd) {
 
 
     while (exitFlag == 0) {
-        bzero(buffer, 10); //vynulujem buffer
+        bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
         //chScRErr(read(newsockfd, buffer, 10));
-        n = recv(newsockfd,buffer,10,MSG_WAITALL);
+        n = recv(newsockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
         if(n < 0){
             perror("Receive option Error:");
         }
@@ -154,7 +156,7 @@ void loggedMenuServ(int newsockfd) {
             case 9:
                 msg = "See you soon :)\n";
                // chScWErr(write(newsockfd, msg, strlen(msg)+1));
-                n = send(newsockfd,msg,255,MSG_EOR);
+                n = send(newsockfd,msg,MSGBUFFSIZE,MSG_EOR);
                 if(n < 0){
                     perror("Send option Error:");
                 }
@@ -167,7 +169,7 @@ void loggedMenuServ(int newsockfd) {
                 chScWErr(write(newsockfd, msg, strlen(msg) + 1));
                 loggedMenuServ(newsockfd);*/
                 msg = "Choose correct option!\n";
-                n = send(newsockfd,msg,255,MSG_EOR);
+                n = send(newsockfd,msg,MSGBUFFSIZE,MSG_EOR);
                 if(n < 0){
                     perror("Send option Error:");
                 }
@@ -176,14 +178,14 @@ void loggedMenuServ(int newsockfd) {
 }
 
 void msgMenuServ(int newsockfd) {
-    char buffer[10];
+    char buffer[MSGBUFFSIZE];
     int exitFlag = 0;
     int option;
     char* msg;
 
     while (exitFlag == 0) {
-        bzero(buffer,10); //vynulujem buffer
-        chScRErr(read(newsockfd, buffer, 10));
+        bzero(buffer,MSGBUFFSIZE); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
 
         option = atoi(buffer);
         switch (option) {
@@ -203,22 +205,22 @@ void msgMenuServ(int newsockfd) {
             default:
                 printf("msgMenu cycle\n");
                 msg = "Choose correct option!\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                chScWErr(write(newsockfd, msg, MSGBUFFSIZE));
         }
     }
 }
 
 void fileMenuServ(int newsockfd) {
-    char buffer[10];
+    char buffer[MSGBUFFSIZE];
     int exitFlag = 0;
     int option;
     char *msg;
     int n;
 
     while (exitFlag == 0) {
-        bzero(buffer, 10); //vynulujem buffer
+        bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
         //chScRErr(read(newsockfd, buffer, 10));
-        n = recv(newsockfd,buffer,10,MSG_WAITALL);
+        n = recv(newsockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
         if(n < 0){
             perror("Receive option Error:");
         }
@@ -245,7 +247,7 @@ void fileMenuServ(int newsockfd) {
                 msg = "Choose correct option!\n";
                 chScWErr(write(newsockfd, msg, strlen(msg)+1));*/
                 msg = "Choose correct option!\n";
-                n = send(newsockfd,msg,255,MSG_EOR);
+                n = send(newsockfd,msg,MSGBUFFSIZE,MSG_EOR);
                 if(n < 0){
                     perror("Send option Error:");
                 }
@@ -254,14 +256,14 @@ void fileMenuServ(int newsockfd) {
 }
 
 void groupMenuServ(int newsockfd) {
-    char buffer[10];
+    char buffer[MSGBUFFSIZE];
     int exitFlag = 0;
     int option;
     char* msg;
 
     while (exitFlag == 0) {
-        bzero(buffer,10); //vynulujem buffer
-        chScRErr(read(newsockfd, buffer, 10));
+        bzero(buffer,MSGBUFFSIZE); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
 
         option = atoi(buffer);
         switch (option) {
@@ -293,7 +295,7 @@ void groupMenuServ(int newsockfd) {
 
             default:
                 msg = "Choose correct option!\n";
-                chScWErr(write(newsockfd, msg, strlen(msg)+1));
+                chScWErr(write(newsockfd, msg, MSGBUFFSIZE));
         }
     }
 }
