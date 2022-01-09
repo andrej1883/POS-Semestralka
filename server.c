@@ -624,10 +624,10 @@ void sendFileServ(int newsockfd, char *current) {
 
         bzero(buffer, MSGBUFFSIZE);
         chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
-        n = recv(newsockfd, buffer, MSGBUFFSIZE, MSG_WAITALL);
+        /*n = recv(newsockfd, buffer, MSGBUFFSIZE, MSG_WAITALL);
         if (n < 0) {
             perror("Receive name Error:");
-        }
+        }*/
 
         int chosenReq;
         sscanf(buffer, "%d", &chosenReq);
@@ -679,7 +679,7 @@ void getFileInfoServ(int newsockfd) {
     fileInfo *new = (fileInfo *) malloc(sizeof(fileInfo));
 
     bzero(buffer, MSGBUFFSIZE);
-    chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
+    //chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
     chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
 
     sscanf(buffer, "%s %s %s", new->fileName, new->fromUser, new->toUser);
@@ -718,14 +718,7 @@ void rcvFileServ(int newsockfd) {
     pthread_mutex_unlock(&mutex);
     getFileInfoServ(newsockfd);
     filepointer = fopen(directory, "w");
-    /*while (1) {
-        n = recv(newsockfd, buffer, 1024, 0);
-        if (n <= 0) {
-            break;
-        }
-        fprintf(filepointer, "%s", buffer);
-        bzero(buffer, 1024);
-    }*/
+
     n = recv(newsockfd, buffer, 2048, MSG_WAITALL);
     if (n < 0) {
         perror("Receive file Error:");
