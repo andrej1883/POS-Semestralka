@@ -547,7 +547,6 @@ void deleteUser(char *name) {
     pthread_mutex_unlock(&mutex);
 }
 
-
 void sendFileServ(int newsockfd, char *current) {
     char buffer[MSGBUFFSIZE];
     char loaded[10];
@@ -1170,15 +1169,30 @@ void addMember(int newsockfd, char *membersName) {
     }
     pthread_mutex_unlock(&mutex);
 
+    // Start of change
+
+    friend *userList[999];
+    int numOfusers = 1;
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, membersName) != 0) {
+            friend *helperFriend = (friend *) malloc(sizeof(friend));
+            strcpy(helperFriend->fUsername, users[i]->username);
+            userList[numOfusers] = helperFriend;
+            numOfusers++;
+        }
+    }
+
+    // End of change
+
     bzero(buffer, MSGBUFFSIZE);
     strcpy(buffer, "Here is list of all users: \n");
-    for (int i = 0; i < numberUsers; ++i) {
+    for (int i = 1; i < numOfusers; ++i) {
         int val = i;
         char sid[3];
         sprintf(sid, "%i", val);
         strcat(buffer, sid);
         strcat(buffer, ". ");
-        strcat(buffer, users[i]->username);
+        strcat(buffer, userList[i]->fUsername);
         strcat(buffer, "\n");
     }
     chScWErr(write(newsockfd, buffer, MSGBUFFSIZE));
@@ -1187,16 +1201,24 @@ void addMember(int newsockfd, char *membersName) {
     chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
 
     int test2;
+    int chosenUser = -1;
     sscanf(buffer, "%d", &test2);
     pthread_mutex_lock(&mutex);
+
+    for (int i = 0; i < numberUsers; ++i) {
+        if (strcmp(users[i]->username, userList[test2]->fUsername) == 0) {
+            chosenUser = i;
+        }
+    }
+
     friend *newMember = (friend *) malloc(sizeof(friend));
-    if ((test2 >= 0)) {
-        strcpy(newMember->fUsername, users[test2]->username);
+    if ((chosenUser >= 0)) {
+        strcpy(newMember->fUsername, users[chosenUser]->username);
         group->members[group->numMemb] = newMember;
         group->numMemb++;
         //TODO:Check if commented code works
         user *newMemberU;// = (user *) malloc(sizeof(user));
-        newMemberU = users[test2];
+        newMemberU = users[chosenUser];
 
         newMemberU->groupChats[newMemberU->numGroups] = group;
         newMemberU->numGroups++;
@@ -1364,7 +1386,12 @@ void sendGroupMessage(int newsockfd, char *userName) {
 
         bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
         chScRErr(read(newsockfd, buffer, MSGBUFFSIZE));
-        addGroupMessage(textedGroup->chatName, buffer, managingUser->username);
+        char editedMSG[MSGBUFFSIZE];
+        bzero(editedMSG, MSGBUFFSIZE);
+        strcpy(editedMSG, managingUser->username);
+        strcat(editedMSG, ": ");
+        strcat(editedMSG, buffer);
+        addGroupMessage(textedGroup->chatName, editedMSG, managingUser->username);
 
         bzero(buffer, MSGBUFFSIZE);
         strcpy(buffer, "Message sent! \n");
