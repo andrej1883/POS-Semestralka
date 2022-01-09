@@ -9,8 +9,10 @@
 #include "client.h"
 #include "server.h"
 
+#define MSGBUFFSIZE 256
+
 void welcomeCli(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
     int exitFlag = 0;
     int option;
     int n;
@@ -23,10 +25,10 @@ void welcomeCli(int sockfd) {
         printf("3. exit\n");
         printf("Your option: ");
 
-        bzero(buffer, 256); //vynulujem buffer
-        fgets(buffer, 255, stdin); //naplnim buffer
+        bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+        fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
         //chScWErr(write(sockfd, buffer, strlen(buffer)));
-        n = send(sockfd,buffer,10,MSG_EOR);
+        n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
         if(n < 0){
             perror("Send option Error:");
         }
@@ -48,18 +50,18 @@ void welcomeCli(int sockfd) {
                 authClie(sockfd);
                 break;
             case 3:
-                bzero(buffer, 255); //vynulujem buffer
+                bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
                 //chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
-                n = recv(sockfd,buffer,255,MSG_WAITALL);
+                n = recv(sockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
                 if(n < 0){
                     perror("Receive option Error:");
                 }
                 printf("%s\n", buffer); //vypisem spravu od serveru
                 exit(0);
             default:
-                bzero(buffer, 255); //vynulujem buffer
+                bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
                 //chScRErr(read(sockfd, buffer, 255));
-                n = recv(sockfd,buffer,255,MSG_WAITALL);
+                n = recv(sockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
                 if(n < 0){
                     perror("Receive option Error:");
                 }
@@ -72,17 +74,16 @@ void welcomeCli(int sockfd) {
 }
 
 void loggedMenuCli(int sockfd) {
-    char buffer[256];
-    char bmsg[255];
+    char buffer[MSGBUFFSIZE];
     int exitFlag = 0;
     int option;
     int n;
 
 
-    bzero(buffer, 10); //vynulujem buffer
+    bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
     strcpy(buffer,getMyName());
     //chScWErr(write(sockfd, buffer, strlen(buffer)));
-    n = send(sockfd,buffer,10,MSG_EOR);
+    n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
     if(n < 0){
         perror("Send option Error:");
     }
@@ -104,10 +105,10 @@ void loggedMenuCli(int sockfd) {
         printf("9. exit\n");
 
         printf("Your option: ");
-        bzero(buffer, 10); //vynulujem buffer
-        fgets(buffer, 10, stdin); //naplnim buffer
+        bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+        fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
         //chScWErr(write(sockfd, buffer, strlen(buffer)));
-        n = send(sockfd,buffer,10,MSG_EOR);
+        n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
         if(n < 0){
             perror("Send option Error:");
         }
@@ -152,8 +153,8 @@ void loggedMenuCli(int sockfd) {
                 manageRequestsClie(sockfd);
                 break;
             case 9:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255)); //precitam spravu zo servera
+                bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+                chScRErr(read(sockfd, buffer, MSGBUFFSIZE)); //precitam spravu zo servera
                 printf("%s\n", buffer); //vypisem spravu od serveru
                 exit(0);
             default:
@@ -164,7 +165,7 @@ void loggedMenuCli(int sockfd) {
 }
 
 void msgMenuCli(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
     int exitFlag = 0;
     int option;
 
@@ -175,9 +176,9 @@ void msgMenuCli(int sockfd) {
         printf("3. exit\n");
         printf("Your option: ");
 
-        bzero(buffer, 256); //vynulujem buffer
-        fgets(buffer, 255, stdin); //naplnim buffer
-        chScWErr(write(sockfd, buffer, strlen(buffer)));
+        bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+        fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+        chScWErr(write(sockfd, buffer, MSGBUFFSIZE));
 
         option  = atoi(buffer);
         switch (option) {
@@ -195,8 +196,8 @@ void msgMenuCli(int sockfd) {
 
                 break;
             default:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255));
+                bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+                chScRErr(read(sockfd, buffer, MSGBUFFSIZE));
                 printf("%s\n", buffer); //vypisem spravu od serveru
                 exitFlag = 0;
                 //printf("here we go again\n");
@@ -205,8 +206,8 @@ void msgMenuCli(int sockfd) {
 }
 
 void fileMenuCli(int sockfd) {
-    char buffer[255];
-    char buffer2[255];
+    char buffer[MSGBUFFSIZE];
+    char buffer2[MSGBUFFSIZE];
     int exitFlag = 0;
     int option;
     int n;
@@ -218,10 +219,10 @@ void fileMenuCli(int sockfd) {
         printf("3. exit\n");
         printf("Your option: ");
 
-        bzero(buffer, 255); //vynulujem buffer
-        fgets(buffer, 255, stdin); //naplnim buffer
+        bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+        fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
         //chScWErr(write(sockfd, buffer, strlen(buffer)));
-        n = send(sockfd,buffer,255,MSG_EOR);
+        n = send(sockfd,buffer,MSGBUFFSIZE,MSG_EOR);
         if(n < 0){
             perror("Send option Error:");
         }
@@ -230,13 +231,13 @@ void fileMenuCli(int sockfd) {
         switch (option) {
             case 1:
                 printf("Enter file name: ");
-                bzero(buffer, 255); //vynulujem buffer
-                fgets(buffer, 255, stdin); //naplnim buffer
-                trimNL(buffer,sizeof (buffer));
+                bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+                fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+                trimNL(buffer,MSGBUFFSIZE);
                 printf("Send to: ");
-                bzero(buffer2, 255); //vynulujem buffer
-                fgets(buffer2, 255, stdin); //naplnim buffer
-                trimNL(buffer2,sizeof (buffer2));
+                bzero(buffer2, MSGBUFFSIZE); //vynulujem buffer
+                fgets(buffer2, MSGBUFFSIZE, stdin); //naplnim buffer
+                trimNL(buffer2,MSGBUFFSIZE);
                 exitFlag = 1;
                 sendFileClie(buffer,sockfd,buffer2);
                 loggedMenuCli(sockfd);
@@ -257,9 +258,9 @@ void fileMenuCli(int sockfd) {
                 exitFlag = 0;*/
                 //printf("here we go again\n");
 
-                bzero(buffer, 255); //vynulujem buffer
+                bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
                 //chScRErr(read(sockfd, buffer, 255));
-                n = recv(sockfd,buffer,255,MSG_WAITALL);
+                n = recv(sockfd,buffer,MSGBUFFSIZE,MSG_WAITALL);
                 if(n < 0){
                     perror("Receive option Error:");
                 }
@@ -270,7 +271,7 @@ void fileMenuCli(int sockfd) {
 }
 
 void groupMenuCli(int sockfd) {
-    char buffer[256];
+    char buffer[MSGBUFFSIZE];
     int exitFlag = 0;
     int option;
 
@@ -284,9 +285,9 @@ void groupMenuCli(int sockfd) {
         printf("6. exit\n");
         printf("Your option: ");
 
-        bzero(buffer, 256); //vynulujem buffer
-        fgets(buffer, 255, stdin); //naplnim buffer
-        chScWErr(write(sockfd, buffer, strlen(buffer)));
+        bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+        fgets(buffer, MSGBUFFSIZE, stdin); //naplnim buffer
+        chScWErr(write(sockfd, buffer, MSGBUFFSIZE));
 
         option  = atoi(buffer);
         switch (option) {
@@ -316,8 +317,8 @@ void groupMenuCli(int sockfd) {
 
                 break;
             default:
-                bzero(buffer, 256); //vynulujem buffer
-                chScRErr(read(sockfd, buffer, 255));
+                bzero(buffer, MSGBUFFSIZE); //vynulujem buffer
+                chScRErr(read(sockfd, buffer, MSGBUFFSIZE));
                 printf("%s\n", buffer); //vypisem spravu od serveru
                 exitFlag = 0;
                 //printf("here we go again\n");
