@@ -172,34 +172,54 @@ void addFriend(int newsockfd, char *username) {
     }
 
     char buffer[256];
-    bzero(buffer, 256);
-    strcpy(buffer, "Here is list of users you aren't friends with: \n");
-    for (int i = 1; i < numOfNonFrd; ++i) {
-        int val = i;
-        char sid[3];
-        sprintf(sid, "%i", val);
-        strcat(buffer, sid);
-        strcat(buffer, ". ");
-        strcat(buffer, nonFriends[i]->fUsername);
-        strcat(buffer, "\n");
+    if (numOfNonFrd == 1 ) {
+
+        bzero(buffer, 256);
+        strcpy(buffer, "It would seem that all users are your friends \n Press 0 to continue");
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        //send(newsockfd,buffer,255,MSG_EOR);
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+
+        bzero(buffer, 256);
+        strcpy(buffer, "Or maybe you are just only one \n Press 0 to contemplate your lonely existence");
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+        //send(newsockfd,buffer,255,MSG_EOR);
+
+    } else {
+
+        bzero(buffer, 256);
+        strcpy(buffer, "Here is list of users you aren't friends with: \n");
+        for (int i = 1; i < numOfNonFrd; ++i) {
+            int val = i;
+            char sid[3];
+            sprintf(sid, "%i", val);
+            strcat(buffer, sid);
+            strcat(buffer, ". ");
+            strcat(buffer, nonFriends[i]->fUsername);
+            strcat(buffer, "\n");
+        }
+        chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
+
+        bzero(buffer, 256); //vynulujem buffer
+        chScRErr(read(newsockfd, buffer, 256));
+
+        int test;
+        sscanf(buffer, "%d", &test);
+        if ((test >= 0)) {
+            pthread_mutex_lock(&mutex);
+            sendRequest(username, nonFriends[test]->fUsername);
+            pthread_mutex_unlock(&mutex);
+
+        }
+        //trimNL(buffer,sizeof (buffer));
+        //strcpy(choise, buffer);
+        const char *msg = "Friend request sent!";
+        chScWErr(write(newsockfd, msg, strlen(msg) + 1));
     }
-    chScWErr(write(newsockfd, buffer, strlen(buffer) + 1));
 
-    bzero(buffer, 256); //vynulujem buffer
-    chScRErr(read(newsockfd, buffer, 256));
-
-    int test;
-    sscanf(buffer, "%d", &test);
-    if ((test >= 0)) {
-        pthread_mutex_lock(&mutex);
-        sendRequest(username, nonFriends[test]->fUsername);
-        pthread_mutex_unlock(&mutex);
-
-    }
-    //trimNL(buffer,sizeof (buffer));
-    //strcpy(choise, buffer);
-    const char *msg = "Friend request sent!";
-    chScWErr(write(newsockfd, msg, strlen(msg) + 1));
 
     loggedMenuServ(newsockfd);
 }
